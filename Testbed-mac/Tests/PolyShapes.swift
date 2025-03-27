@@ -25,7 +25,7 @@
  */
 
 import AppKit
-import Box2D
+
 
 /// This tests stacking. It also shows how to use b2World::Query
 /// and b2TestOverlap.

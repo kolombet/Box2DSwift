@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class ConveyorBelt: TestCase, b2ContactListener {
   override class var title: String { "Conveyor Belt" }

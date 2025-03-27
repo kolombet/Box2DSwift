@@ -25,7 +25,7 @@
  */
 
 import AppKit
-import Box2D
+
 
 class Revolute: TestCase {
   override class var title: String { "Revolute" }

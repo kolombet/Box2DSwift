@@ -25,7 +25,7 @@
  */
 
 import Cocoa
-import Box2D
+
 
 class AddPair : TestCase {
   override static var title: String { "AddPair"}

@@ -25,7 +25,7 @@
  */
 
 import AppKit
-import Box2D
+
 
 class RopeJoint: TestCase {
   override class var title: String { "Rope Joint" }

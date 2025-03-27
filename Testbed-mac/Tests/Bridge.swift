@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import Cocoa
-import Box2D
+
 
 class Bridge: TestCase {
   override static var title: String { "Bridge" }

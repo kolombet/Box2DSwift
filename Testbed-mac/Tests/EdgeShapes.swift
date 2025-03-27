@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class EdgeShapesCallback : b2RayCastCallback {
   var fixture: b2Fixture? = nil

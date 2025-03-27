@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class DistanceTest: TestCase {
   override class var title: String { "Distance Test" }

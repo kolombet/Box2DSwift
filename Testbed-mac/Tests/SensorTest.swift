@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class SensorTest: TestCase, b2ContactListener {
   override class var title: String { "Sensor Test" }

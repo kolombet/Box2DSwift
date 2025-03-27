@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class Gear: TestCase {
   override class var title: String { "Gear" }

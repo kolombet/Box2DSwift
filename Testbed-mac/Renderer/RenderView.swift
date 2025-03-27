@@ -27,7 +27,7 @@ the original C++ code written by Erin Catto.
 import QuartzCore
 import Metal
 import MetalKit
-import Box2D
+
 
 protocol RenderViewDelegate: AnyObject {
   func simulationLoop(renderView: RenderView)

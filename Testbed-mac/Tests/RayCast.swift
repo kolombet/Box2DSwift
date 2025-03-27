@@ -25,7 +25,7 @@
  */
 
 import AppKit
-import Box2D
+
 
 // This test demonstrates how to use the world ray-cast feature.
 // NOTE: we are intentionally filtering one of the polygons, therefore

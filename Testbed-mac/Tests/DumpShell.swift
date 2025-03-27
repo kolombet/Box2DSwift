@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 class DumpShell: TestCase {
   override class var title: String { "Dump Shell" }

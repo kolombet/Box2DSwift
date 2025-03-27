@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import Cocoa
-import Box2D
+
 
 func randomFloat() -> b2Float {
   var rand = b2Float(arc4random_uniform(1000)) / b2Float(1000)
@@ -196,8 +196,8 @@ class QueryCallback : b2QueryCallback {
 }
 
 class DestructionListener : b2DestructionListener {
-  func sayGoodbye(_ fixture: Box2D.b2Fixture) {}
-  func sayGoodbye(_ joint: Box2D.b2Joint) {}
+  func sayGoodbye(_ fixture: b2Fixture) {}
+  func sayGoodbye(_ joint: b2Joint) {}
 }
 
 class ContactListener : b2ContactListener {

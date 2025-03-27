@@ -25,7 +25,7 @@
  */
 
 import Cocoa
-import Box2D
+
 
 class ApplyForce: TestCase {
   override static var title: String { "Apply Force" }

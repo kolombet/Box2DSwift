@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import Cocoa
-import Box2D
+
 
 private let initValue = "0.00 [ 0.00] ( 0.00)"
 

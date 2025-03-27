@@ -26,7 +26,7 @@
 
 import Cocoa
 import MetalKit
-import Box2D
+
 
 class MainViewController: NSViewController, RenderViewDelegate, SettingViewControllerDelegate {
   weak var infoViewController: InfoViewController?

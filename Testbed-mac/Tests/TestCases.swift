@@ -30,7 +30,6 @@ let testCases: [TestCase.Type] = [
   AddPair.self,
   ApplyForce.self,
   BodyTypes.self,
-  Breakable.self,
   Bridge.self,
   Bullet.self,
   Cantilever.self,

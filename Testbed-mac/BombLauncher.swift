@@ -25,7 +25,7 @@
  */
 
 import AppKit
-import Box2D
+
 
 class BombLauncher : NSObject {
   unowned let world: b2World

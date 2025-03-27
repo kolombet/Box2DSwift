@@ -25,7 +25,7 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
-import Box2D
+
 
 // This is a test of collision filtering.
 // There is a triangle, a box, and a circle.

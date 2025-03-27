@@ -25,7 +25,7 @@
  */
 
 import Cocoa
-import Box2D
+
 
 class TestCase {
   class var title: String { get {""} }

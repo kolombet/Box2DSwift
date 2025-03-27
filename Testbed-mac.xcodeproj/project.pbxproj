@@ -10,7 +10,6 @@
 		47924D112B45452F003CFF87 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D102B45452F003CFF87 /* AppDelegate.swift */; };
 		47924D152B454530003CFF87 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47924D142B454530003CFF87 /* Assets.xcassets */; };
 		47924D182B454530003CFF87 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47924D162B454530003CFF87 /* Main.storyboard */; };
-		47924D212B4545EA003CFF87 /* Box2D in Frameworks */ = {isa = PBXBuildFile; productRef = 47924D202B4545EA003CFF87 /* Box2D */; };
 		47924D632B45462E003CFF87 /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D222B45462D003CFF87 /* Helper.swift */; };
 		47924D642B45462E003CFF87 /* GJKView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D232B45462D003CFF87 /* GJKView.swift */; };
 		47924D652B45462E003CFF87 /* InfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D242B45462D003CFF87 /* InfoViewController.swift */; };
@@ -38,7 +37,6 @@
 		47924D7B2B45462E003CFF87 /* Tumbler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D3D2B45462D003CFF87 /* Tumbler.swift */; };
 		47924D7C2B45462E003CFF87 /* BodyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D3E2B45462D003CFF87 /* BodyTypes.swift */; };
 		47924D7D2B45462E003CFF87 /* ContinuousTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D3F2B45462D003CFF87 /* ContinuousTest.swift */; };
-		47924D7E2B45462E003CFF87 /* Breakable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D402B45462D003CFF87 /* Breakable.swift */; };
 		47924D7F2B45462E003CFF87 /* TestCases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D412B45462D003CFF87 /* TestCases.swift */; };
 		47924D802B45462E003CFF87 /* Pyramid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D422B45462D003CFF87 /* Pyramid.swift */; };
 		47924D822B45462E003CFF87 /* Car.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D442B45462D003CFF87 /* Car.swift */; };
@@ -68,6 +66,55 @@
 		47924D9F2B45462E003CFF87 /* CollisionProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D612B45462D003CFF87 /* CollisionProcessing.swift */; };
 		47924DA02B45462E003CFF87 /* Cantilever.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47924D622B45462D003CFF87 /* Cantilever.swift */; };
 		BB718DD12D957CC6008E2F49 /* Plinko.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD02D957CC0008E2F49 /* Plinko.swift */; };
+		BB718E0E2D957F8A008E2F49 /* b2WeldJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DFD2D957F8A008E2F49 /* b2WeldJoint.swift */; };
+		BB718E0F2D957F8A008E2F49 /* b2MotorJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF72D957F8A008E2F49 /* b2MotorJoint.swift */; };
+		BB718E102D957F8A008E2F49 /* b2Fixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E022D957F8A008E2F49 /* b2Fixture.swift */; };
+		BB718E112D957F8A008E2F49 /* b2Draw.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE22D957F8A008E2F49 /* b2Draw.swift */; };
+		BB718E122D957F8A008E2F49 /* b2Body.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E002D957F8A008E2F49 /* b2Body.swift */; };
+		BB718E132D957F8A008E2F49 /* b2CollidePolygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDB2D957F8A008E2F49 /* b2CollidePolygon.swift */; };
+		BB718E142D957F8A008E2F49 /* b2TimeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E042D957F8A008E2F49 /* b2TimeStep.swift */; };
+		BB718E152D957F8A008E2F49 /* b2CircleContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DEB2D957F8A008E2F49 /* b2CircleContact.swift */; };
+		BB718E162D957F8A008E2F49 /* b2ChainAndPolygonContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DEA2D957F8A008E2F49 /* b2ChainAndPolygonContact.swift */; };
+		BB718E172D957F8A008E2F49 /* b2DistanceJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF32D957F8A008E2F49 /* b2DistanceJoint.swift */; };
+		BB718E182D957F8A008E2F49 /* b2MouseJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF82D957F8A008E2F49 /* b2MouseJoint.swift */; };
+		BB718E192D957F8A008E2F49 /* b2BroadPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD82D957F8A008E2F49 /* b2BroadPhase.swift */; };
+		BB718E1A2D957F8A008E2F49 /* b2RopeJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DFC2D957F8A008E2F49 /* b2RopeJoint.swift */; };
+		BB718E1B2D957F8A008E2F49 /* b2Rope.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E082D957F8A008E2F49 /* b2Rope.swift */; };
+		BB718E1C2D957F8A008E2F49 /* b2PolygonShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD52D957F8A008E2F49 /* b2PolygonShape.swift */; };
+		BB718E1D2D957F8A008E2F49 /* b2Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE62D957F8A008E2F49 /* b2Timer.swift */; };
+		BB718E1E2D957F8A008E2F49 /* b2Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD62D957F8A008E2F49 /* b2Shape.swift */; };
+		BB718E1F2D957F8A008E2F49 /* b2ChainAndCircleContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE92D957F8A008E2F49 /* b2ChainAndCircleContact.swift */; };
+		BB718E202D957F8A008E2F49 /* b2Collision.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDC2D957F8A008E2F49 /* b2Collision.swift */; };
+		BB718E212D957F8A008E2F49 /* b2FrictionJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF42D957F8A008E2F49 /* b2FrictionJoint.swift */; };
+		BB718E222D957F8A008E2F49 /* b2WheelJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DFE2D957F8A008E2F49 /* b2WheelJoint.swift */; };
+		BB718E232D957F8A008E2F49 /* b2Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DEC2D957F8A008E2F49 /* b2Contact.swift */; };
+		BB718E242D957F8A008E2F49 /* b2Island.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E032D957F8A008E2F49 /* b2Island.swift */; };
+		BB718E252D957F8A008E2F49 /* b2CollideCircles.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD92D957F8A008E2F49 /* b2CollideCircles.swift */; };
+		BB718E262D957F8A008E2F49 /* b2Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE52D957F8A008E2F49 /* b2Settings.swift */; };
+		BB718E272D957F8A008E2F49 /* b2ChainShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD22D957F8A008E2F49 /* b2ChainShape.swift */; };
+		BB718E282D957F8A008E2F49 /* b2EdgeAndCircleContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DEE2D957F8A008E2F49 /* b2EdgeAndCircleContact.swift */; };
+		BB718E292D957F8A008E2F49 /* b2GrowableStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE32D957F8A008E2F49 /* b2GrowableStack.swift */; };
+		BB718E2A2D957F8A008E2F49 /* b2PrismaticJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF92D957F8A008E2F49 /* b2PrismaticJoint.swift */; };
+		BB718E2B2D957F8A008E2F49 /* b2EdgeAndPolygonContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DEF2D957F8A008E2F49 /* b2EdgeAndPolygonContact.swift */; };
+		BB718E2C2D957F8A008E2F49 /* b2World.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E052D957F8A008E2F49 /* b2World.swift */; };
+		BB718E2D2D957F8A008E2F49 /* b2Wrappers.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE72D957F8A008E2F49 /* b2Wrappers.swift */; };
+		BB718E2E2D957F8A008E2F49 /* b2ContactManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E012D957F8A008E2F49 /* b2ContactManager.swift */; };
+		BB718E2F2D957F8A008E2F49 /* b2TimeOfImpact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDF2D957F8A008E2F49 /* b2TimeOfImpact.swift */; };
+		BB718E302D957F8A008E2F49 /* b2Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE42D957F8A008E2F49 /* b2Math.swift */; };
+		BB718E312D957F8A008E2F49 /* b2PolygonContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF12D957F8A008E2F49 /* b2PolygonContact.swift */; };
+		BB718E322D957F8A008E2F49 /* b2ContactSolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DED2D957F8A008E2F49 /* b2ContactSolver.swift */; };
+		BB718E332D957F8A008E2F49 /* b2PulleyJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DFA2D957F8A008E2F49 /* b2PulleyJoint.swift */; };
+		BB718E342D957F8A008E2F49 /* b2RevoluteJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DFB2D957F8A008E2F49 /* b2RevoluteJoint.swift */; };
+		BB718E352D957F8A008E2F49 /* b2CircleShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD32D957F8A008E2F49 /* b2CircleShape.swift */; };
+		BB718E362D957F8A008E2F49 /* b2CollideEdge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDA2D957F8A008E2F49 /* b2CollideEdge.swift */; };
+		BB718E372D957F8A008E2F49 /* b2Distance.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDD2D957F8A008E2F49 /* b2Distance.swift */; };
+		BB718E382D957F8A008E2F49 /* b2WorldCallbacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718E062D957F8A008E2F49 /* b2WorldCallbacks.swift */; };
+		BB718E392D957F8A008E2F49 /* b2PolygonAndCircleContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF02D957F8A008E2F49 /* b2PolygonAndCircleContact.swift */; };
+		BB718E3A2D957F8A008E2F49 /* b2Joint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF62D957F8A008E2F49 /* b2Joint.swift */; };
+		BB718E3B2D957F8A008E2F49 /* b2DynamicTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DDE2D957F8A008E2F49 /* b2DynamicTree.swift */; };
+		BB718E3C2D957F8A008E2F49 /* b2EdgeShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DD42D957F8A008E2F49 /* b2EdgeShape.swift */; };
+		BB718E3D2D957F8A008E2F49 /* b2Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DE12D957F8A008E2F49 /* b2Common.swift */; };
+		BB718E3E2D957F8A008E2F49 /* b2GearJoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB718DF52D957F8A008E2F49 /* b2GearJoint.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,7 +151,6 @@
 		47924D3D2B45462D003CFF87 /* Tumbler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tumbler.swift; sourceTree = "<group>"; };
 		47924D3E2B45462D003CFF87 /* BodyTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BodyTypes.swift; sourceTree = "<group>"; };
 		47924D3F2B45462D003CFF87 /* ContinuousTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContinuousTest.swift; sourceTree = "<group>"; };
-		47924D402B45462D003CFF87 /* Breakable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Breakable.swift; sourceTree = "<group>"; };
 		47924D412B45462D003CFF87 /* TestCases.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestCases.swift; sourceTree = "<group>"; };
 		47924D422B45462D003CFF87 /* Pyramid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pyramid.swift; sourceTree = "<group>"; };
 		47924D442B45462D003CFF87 /* Car.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Car.swift; sourceTree = "<group>"; };
@@ -135,6 +181,55 @@
 		47924D622B45462D003CFF87 /* Cantilever.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cantilever.swift; sourceTree = "<group>"; };
 		47924DA12B454724003CFF87 /* Testbed-mac-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Testbed-mac-Bridging-Header.h"; sourceTree = "<group>"; };
 		BB718DD02D957CC0008E2F49 /* Plinko.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plinko.swift; sourceTree = "<group>"; };
+		BB718DD22D957F8A008E2F49 /* b2ChainShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2ChainShape.swift; sourceTree = "<group>"; };
+		BB718DD32D957F8A008E2F49 /* b2CircleShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2CircleShape.swift; sourceTree = "<group>"; };
+		BB718DD42D957F8A008E2F49 /* b2EdgeShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2EdgeShape.swift; sourceTree = "<group>"; };
+		BB718DD52D957F8A008E2F49 /* b2PolygonShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2PolygonShape.swift; sourceTree = "<group>"; };
+		BB718DD62D957F8A008E2F49 /* b2Shape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Shape.swift; sourceTree = "<group>"; };
+		BB718DD82D957F8A008E2F49 /* b2BroadPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2BroadPhase.swift; sourceTree = "<group>"; };
+		BB718DD92D957F8A008E2F49 /* b2CollideCircles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2CollideCircles.swift; sourceTree = "<group>"; };
+		BB718DDA2D957F8A008E2F49 /* b2CollideEdge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2CollideEdge.swift; sourceTree = "<group>"; };
+		BB718DDB2D957F8A008E2F49 /* b2CollidePolygon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2CollidePolygon.swift; sourceTree = "<group>"; };
+		BB718DDC2D957F8A008E2F49 /* b2Collision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Collision.swift; sourceTree = "<group>"; };
+		BB718DDD2D957F8A008E2F49 /* b2Distance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Distance.swift; sourceTree = "<group>"; };
+		BB718DDE2D957F8A008E2F49 /* b2DynamicTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2DynamicTree.swift; sourceTree = "<group>"; };
+		BB718DDF2D957F8A008E2F49 /* b2TimeOfImpact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2TimeOfImpact.swift; sourceTree = "<group>"; };
+		BB718DE12D957F8A008E2F49 /* b2Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Common.swift; sourceTree = "<group>"; };
+		BB718DE22D957F8A008E2F49 /* b2Draw.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Draw.swift; sourceTree = "<group>"; };
+		BB718DE32D957F8A008E2F49 /* b2GrowableStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2GrowableStack.swift; sourceTree = "<group>"; };
+		BB718DE42D957F8A008E2F49 /* b2Math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Math.swift; sourceTree = "<group>"; };
+		BB718DE52D957F8A008E2F49 /* b2Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Settings.swift; sourceTree = "<group>"; };
+		BB718DE62D957F8A008E2F49 /* b2Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Timer.swift; sourceTree = "<group>"; };
+		BB718DE72D957F8A008E2F49 /* b2Wrappers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Wrappers.swift; sourceTree = "<group>"; };
+		BB718DE92D957F8A008E2F49 /* b2ChainAndCircleContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2ChainAndCircleContact.swift; sourceTree = "<group>"; };
+		BB718DEA2D957F8A008E2F49 /* b2ChainAndPolygonContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2ChainAndPolygonContact.swift; sourceTree = "<group>"; };
+		BB718DEB2D957F8A008E2F49 /* b2CircleContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2CircleContact.swift; sourceTree = "<group>"; };
+		BB718DEC2D957F8A008E2F49 /* b2Contact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Contact.swift; sourceTree = "<group>"; };
+		BB718DED2D957F8A008E2F49 /* b2ContactSolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2ContactSolver.swift; sourceTree = "<group>"; };
+		BB718DEE2D957F8A008E2F49 /* b2EdgeAndCircleContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2EdgeAndCircleContact.swift; sourceTree = "<group>"; };
+		BB718DEF2D957F8A008E2F49 /* b2EdgeAndPolygonContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2EdgeAndPolygonContact.swift; sourceTree = "<group>"; };
+		BB718DF02D957F8A008E2F49 /* b2PolygonAndCircleContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2PolygonAndCircleContact.swift; sourceTree = "<group>"; };
+		BB718DF12D957F8A008E2F49 /* b2PolygonContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2PolygonContact.swift; sourceTree = "<group>"; };
+		BB718DF32D957F8A008E2F49 /* b2DistanceJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2DistanceJoint.swift; sourceTree = "<group>"; };
+		BB718DF42D957F8A008E2F49 /* b2FrictionJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2FrictionJoint.swift; sourceTree = "<group>"; };
+		BB718DF52D957F8A008E2F49 /* b2GearJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2GearJoint.swift; sourceTree = "<group>"; };
+		BB718DF62D957F8A008E2F49 /* b2Joint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Joint.swift; sourceTree = "<group>"; };
+		BB718DF72D957F8A008E2F49 /* b2MotorJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2MotorJoint.swift; sourceTree = "<group>"; };
+		BB718DF82D957F8A008E2F49 /* b2MouseJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2MouseJoint.swift; sourceTree = "<group>"; };
+		BB718DF92D957F8A008E2F49 /* b2PrismaticJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2PrismaticJoint.swift; sourceTree = "<group>"; };
+		BB718DFA2D957F8A008E2F49 /* b2PulleyJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2PulleyJoint.swift; sourceTree = "<group>"; };
+		BB718DFB2D957F8A008E2F49 /* b2RevoluteJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2RevoluteJoint.swift; sourceTree = "<group>"; };
+		BB718DFC2D957F8A008E2F49 /* b2RopeJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2RopeJoint.swift; sourceTree = "<group>"; };
+		BB718DFD2D957F8A008E2F49 /* b2WeldJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2WeldJoint.swift; sourceTree = "<group>"; };
+		BB718DFE2D957F8A008E2F49 /* b2WheelJoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2WheelJoint.swift; sourceTree = "<group>"; };
+		BB718E002D957F8A008E2F49 /* b2Body.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Body.swift; sourceTree = "<group>"; };
+		BB718E012D957F8A008E2F49 /* b2ContactManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2ContactManager.swift; sourceTree = "<group>"; };
+		BB718E022D957F8A008E2F49 /* b2Fixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Fixture.swift; sourceTree = "<group>"; };
+		BB718E032D957F8A008E2F49 /* b2Island.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Island.swift; sourceTree = "<group>"; };
+		BB718E042D957F8A008E2F49 /* b2TimeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2TimeStep.swift; sourceTree = "<group>"; };
+		BB718E052D957F8A008E2F49 /* b2World.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2World.swift; sourceTree = "<group>"; };
+		BB718E062D957F8A008E2F49 /* b2WorldCallbacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2WorldCallbacks.swift; sourceTree = "<group>"; };
+		BB718E082D957F8A008E2F49 /* b2Rope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = b2Rope.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,7 +237,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				47924D212B4545EA003CFF87 /* Box2D in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +262,7 @@
 		47924D0F2B45452F003CFF87 /* Testbed-mac */ = {
 			isa = PBXGroup;
 			children = (
+				BB718E0C2D957F8A008E2F49 /* Box2D */,
 				47924D102B45452F003CFF87 /* AppDelegate.swift */,
 				47924D282B45462D003CFF87 /* WindowController.swift */,
 				47924D252B45462D003CFF87 /* ContainerViewController.swift */,
@@ -209,7 +304,6 @@
 				47924D392B45462D003CFF87 /* AddPair.swift */,
 				47924D542B45462D003CFF87 /* ApplyForce.swift */,
 				47924D3E2B45462D003CFF87 /* BodyTypes.swift */,
-				47924D402B45462D003CFF87 /* Breakable.swift */,
 				47924D362B45462D003CFF87 /* Bridge.swift */,
 				47924D452B45462D003CFF87 /* Bullet.swift */,
 				47924D622B45462D003CFF87 /* Cantilever.swift */,
@@ -251,6 +345,118 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		BB718DD72D957F8A008E2F49 /* Shapes */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DD22D957F8A008E2F49 /* b2ChainShape.swift */,
+				BB718DD32D957F8A008E2F49 /* b2CircleShape.swift */,
+				BB718DD42D957F8A008E2F49 /* b2EdgeShape.swift */,
+				BB718DD52D957F8A008E2F49 /* b2PolygonShape.swift */,
+				BB718DD62D957F8A008E2F49 /* b2Shape.swift */,
+			);
+			path = Shapes;
+			sourceTree = "<group>";
+		};
+		BB718DE02D957F8A008E2F49 /* Collision */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DD72D957F8A008E2F49 /* Shapes */,
+				BB718DD82D957F8A008E2F49 /* b2BroadPhase.swift */,
+				BB718DD92D957F8A008E2F49 /* b2CollideCircles.swift */,
+				BB718DDA2D957F8A008E2F49 /* b2CollideEdge.swift */,
+				BB718DDB2D957F8A008E2F49 /* b2CollidePolygon.swift */,
+				BB718DDC2D957F8A008E2F49 /* b2Collision.swift */,
+				BB718DDD2D957F8A008E2F49 /* b2Distance.swift */,
+				BB718DDE2D957F8A008E2F49 /* b2DynamicTree.swift */,
+				BB718DDF2D957F8A008E2F49 /* b2TimeOfImpact.swift */,
+			);
+			path = Collision;
+			sourceTree = "<group>";
+		};
+		BB718DE82D957F8A008E2F49 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DE12D957F8A008E2F49 /* b2Common.swift */,
+				BB718DE22D957F8A008E2F49 /* b2Draw.swift */,
+				BB718DE32D957F8A008E2F49 /* b2GrowableStack.swift */,
+				BB718DE42D957F8A008E2F49 /* b2Math.swift */,
+				BB718DE52D957F8A008E2F49 /* b2Settings.swift */,
+				BB718DE62D957F8A008E2F49 /* b2Timer.swift */,
+				BB718DE72D957F8A008E2F49 /* b2Wrappers.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		BB718DF22D957F8A008E2F49 /* Contacts */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DE92D957F8A008E2F49 /* b2ChainAndCircleContact.swift */,
+				BB718DEA2D957F8A008E2F49 /* b2ChainAndPolygonContact.swift */,
+				BB718DEB2D957F8A008E2F49 /* b2CircleContact.swift */,
+				BB718DEC2D957F8A008E2F49 /* b2Contact.swift */,
+				BB718DED2D957F8A008E2F49 /* b2ContactSolver.swift */,
+				BB718DEE2D957F8A008E2F49 /* b2EdgeAndCircleContact.swift */,
+				BB718DEF2D957F8A008E2F49 /* b2EdgeAndPolygonContact.swift */,
+				BB718DF02D957F8A008E2F49 /* b2PolygonAndCircleContact.swift */,
+				BB718DF12D957F8A008E2F49 /* b2PolygonContact.swift */,
+			);
+			path = Contacts;
+			sourceTree = "<group>";
+		};
+		BB718DFF2D957F8A008E2F49 /* Joints */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DF32D957F8A008E2F49 /* b2DistanceJoint.swift */,
+				BB718DF42D957F8A008E2F49 /* b2FrictionJoint.swift */,
+				BB718DF52D957F8A008E2F49 /* b2GearJoint.swift */,
+				BB718DF62D957F8A008E2F49 /* b2Joint.swift */,
+				BB718DF72D957F8A008E2F49 /* b2MotorJoint.swift */,
+				BB718DF82D957F8A008E2F49 /* b2MouseJoint.swift */,
+				BB718DF92D957F8A008E2F49 /* b2PrismaticJoint.swift */,
+				BB718DFA2D957F8A008E2F49 /* b2PulleyJoint.swift */,
+				BB718DFB2D957F8A008E2F49 /* b2RevoluteJoint.swift */,
+				BB718DFC2D957F8A008E2F49 /* b2RopeJoint.swift */,
+				BB718DFD2D957F8A008E2F49 /* b2WeldJoint.swift */,
+				BB718DFE2D957F8A008E2F49 /* b2WheelJoint.swift */,
+			);
+			path = Joints;
+			sourceTree = "<group>";
+		};
+		BB718E072D957F8A008E2F49 /* Dynamics */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DF22D957F8A008E2F49 /* Contacts */,
+				BB718DFF2D957F8A008E2F49 /* Joints */,
+				BB718E002D957F8A008E2F49 /* b2Body.swift */,
+				BB718E012D957F8A008E2F49 /* b2ContactManager.swift */,
+				BB718E022D957F8A008E2F49 /* b2Fixture.swift */,
+				BB718E032D957F8A008E2F49 /* b2Island.swift */,
+				BB718E042D957F8A008E2F49 /* b2TimeStep.swift */,
+				BB718E052D957F8A008E2F49 /* b2World.swift */,
+				BB718E062D957F8A008E2F49 /* b2WorldCallbacks.swift */,
+			);
+			path = Dynamics;
+			sourceTree = "<group>";
+		};
+		BB718E092D957F8A008E2F49 /* Rope */ = {
+			isa = PBXGroup;
+			children = (
+				BB718E082D957F8A008E2F49 /* b2Rope.swift */,
+			);
+			path = Rope;
+			sourceTree = "<group>";
+		};
+		BB718E0C2D957F8A008E2F49 /* Box2D */ = {
+			isa = PBXGroup;
+			children = (
+				BB718DE02D957F8A008E2F49 /* Collision */,
+				BB718DE82D957F8A008E2F49 /* Common */,
+				BB718E072D957F8A008E2F49 /* Dynamics */,
+				BB718E092D957F8A008E2F49 /* Rope */,
+			);
+			path = Box2D;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -268,7 +474,6 @@
 			);
 			name = "Testbed-mac";
 			packageProductDependencies = (
-				47924D202B4545EA003CFF87 /* Box2D */,
 			);
 			productName = "Testbed-mac";
 			productReference = 47924D0D2B45452F003CFF87 /* Testbed-mac.app */;
@@ -300,7 +505,6 @@
 			);
 			mainGroup = 47924D042B45452F003CFF87;
 			packageReferences = (
-				47924D1F2B4545EA003CFF87 /* XCRemoteSwiftPackageReference "Box2DSwift" */,
 			);
 			productRefGroup = 47924D0E2B45452F003CFF87 /* Products */;
 			projectDirPath = "";
@@ -341,8 +545,56 @@
 				47924D862B45462E003CFF87 /* VaryingFriction.swift in Sources */,
 				47924D682B45462E003CFF87 /* InfoView.swift in Sources */,
 				47924D9F2B45462E003CFF87 /* CollisionProcessing.swift in Sources */,
-				47924D7E2B45462E003CFF87 /* Breakable.swift in Sources */,
 				47924D8C2B45462E003CFF87 /* EdgeShapes.swift in Sources */,
+				BB718E0E2D957F8A008E2F49 /* b2WeldJoint.swift in Sources */,
+				BB718E0F2D957F8A008E2F49 /* b2MotorJoint.swift in Sources */,
+				BB718E102D957F8A008E2F49 /* b2Fixture.swift in Sources */,
+				BB718E112D957F8A008E2F49 /* b2Draw.swift in Sources */,
+				BB718E122D957F8A008E2F49 /* b2Body.swift in Sources */,
+				BB718E132D957F8A008E2F49 /* b2CollidePolygon.swift in Sources */,
+				BB718E142D957F8A008E2F49 /* b2TimeStep.swift in Sources */,
+				BB718E152D957F8A008E2F49 /* b2CircleContact.swift in Sources */,
+				BB718E162D957F8A008E2F49 /* b2ChainAndPolygonContact.swift in Sources */,
+				BB718E172D957F8A008E2F49 /* b2DistanceJoint.swift in Sources */,
+				BB718E182D957F8A008E2F49 /* b2MouseJoint.swift in Sources */,
+				BB718E192D957F8A008E2F49 /* b2BroadPhase.swift in Sources */,
+				BB718E1A2D957F8A008E2F49 /* b2RopeJoint.swift in Sources */,
+				BB718E1B2D957F8A008E2F49 /* b2Rope.swift in Sources */,
+				BB718E1C2D957F8A008E2F49 /* b2PolygonShape.swift in Sources */,
+				BB718E1D2D957F8A008E2F49 /* b2Timer.swift in Sources */,
+				BB718E1E2D957F8A008E2F49 /* b2Shape.swift in Sources */,
+				BB718E1F2D957F8A008E2F49 /* b2ChainAndCircleContact.swift in Sources */,
+				BB718E202D957F8A008E2F49 /* b2Collision.swift in Sources */,
+				BB718E212D957F8A008E2F49 /* b2FrictionJoint.swift in Sources */,
+				BB718E222D957F8A008E2F49 /* b2WheelJoint.swift in Sources */,
+				BB718E232D957F8A008E2F49 /* b2Contact.swift in Sources */,
+				BB718E242D957F8A008E2F49 /* b2Island.swift in Sources */,
+				BB718E252D957F8A008E2F49 /* b2CollideCircles.swift in Sources */,
+				BB718E262D957F8A008E2F49 /* b2Settings.swift in Sources */,
+				BB718E272D957F8A008E2F49 /* b2ChainShape.swift in Sources */,
+				BB718E282D957F8A008E2F49 /* b2EdgeAndCircleContact.swift in Sources */,
+				BB718E292D957F8A008E2F49 /* b2GrowableStack.swift in Sources */,
+				BB718E2A2D957F8A008E2F49 /* b2PrismaticJoint.swift in Sources */,
+				BB718E2B2D957F8A008E2F49 /* b2EdgeAndPolygonContact.swift in Sources */,
+				BB718E2C2D957F8A008E2F49 /* b2World.swift in Sources */,
+				BB718E2D2D957F8A008E2F49 /* b2Wrappers.swift in Sources */,
+				BB718E2E2D957F8A008E2F49 /* b2ContactManager.swift in Sources */,
+				BB718E2F2D957F8A008E2F49 /* b2TimeOfImpact.swift in Sources */,
+				BB718E302D957F8A008E2F49 /* b2Math.swift in Sources */,
+				BB718E312D957F8A008E2F49 /* b2PolygonContact.swift in Sources */,
+				BB718E322D957F8A008E2F49 /* b2ContactSolver.swift in Sources */,
+				BB718E332D957F8A008E2F49 /* b2PulleyJoint.swift in Sources */,
+				BB718E342D957F8A008E2F49 /* b2RevoluteJoint.swift in Sources */,
+				BB718E352D957F8A008E2F49 /* b2CircleShape.swift in Sources */,
+				BB718E362D957F8A008E2F49 /* b2CollideEdge.swift in Sources */,
+				BB718E372D957F8A008E2F49 /* b2Distance.swift in Sources */,
+				BB718E382D957F8A008E2F49 /* b2WorldCallbacks.swift in Sources */,
+				BB718E392D957F8A008E2F49 /* b2PolygonAndCircleContact.swift in Sources */,
+				BB718E3A2D957F8A008E2F49 /* b2Joint.swift in Sources */,
+				BB718E3B2D957F8A008E2F49 /* b2DynamicTree.swift in Sources */,
+				BB718E3C2D957F8A008E2F49 /* b2EdgeShape.swift in Sources */,
+				BB718E3D2D957F8A008E2F49 /* b2Common.swift in Sources */,
+				BB718E3E2D957F8A008E2F49 /* b2GearJoint.swift in Sources */,
 				47924D732B45462E003CFF87 /* ShapeEditing.swift in Sources */,
 				47924D822B45462E003CFF87 /* Car.swift in Sources */,
 				47924D7D2B45462E003CFF87 /* ContinuousTest.swift in Sources */,
@@ -602,25 +854,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		47924D1F2B4545EA003CFF87 /* XCRemoteSwiftPackageReference "Box2DSwift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/yohei-yoshihara/Box2DSwift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		47924D202B4545EA003CFF87 /* Box2D */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 47924D1F2B4545EA003CFF87 /* XCRemoteSwiftPackageReference "Box2DSwift" */;
-			productName = Box2D;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 47924D052B45452F003CFF87 /* Project object */;
 }
