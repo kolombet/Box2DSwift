@@ -41,7 +41,13 @@ class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
     var dropButton: NSButton?
+    var launchManyButton: NSButton?
+    var cancelButton: NSButton?
+    var progressLabel: NSTextField?
     var bodiesToDestroy = [b2Body]()
+    var ballLaunchTimer: Timer?
+    var remainingBallsToLaunch = 0
+    var totalBallsToLaunch = 0
     
     // Ball tracking
     var ballCounter = 0
@@ -56,6 +62,25 @@ class Plinko: TestCase, b2ContactListener {
     override func prepare() {
         world.setContactListener(self)
         
+        // Configuration values
+        let rows = 10
+        let pegRadius: b2Float = 0.3
+        let horizontalSpacing: b2Float = 2.0
+        let verticalSpacing: b2Float = 1.5
+        let baseY: b2Float = 20.0
+        
+        // Calculate wall coordinates based on peg layout
+        let topRowPegCount = 3
+        let bottomRowPegCount = rows + 2
+        let topRowWidth = horizontalSpacing * b2Float(topRowPegCount - 1)
+        let bottomRowWidth = horizontalSpacing * b2Float(bottomRowPegCount - 1)
+        let topLeftX = -topRowWidth / 2.0
+        let topRightX = topRowWidth / 2.0
+        let bottomLeftX = -bottomRowWidth / 2.0
+        let bottomRightX = bottomRowWidth / 2.0
+        let topY = baseY
+        let bottomY: b2Float = baseY - verticalSpacing * b2Float(rows - 1)
+        
         // Create boundary
         do {
             let bd = b2BodyDef()
@@ -64,27 +89,21 @@ class Plinko: TestCase, b2ContactListener {
             // Create walls
             let shape = b2EdgeShape()
             
-            // Left wall
-            let wallX: Float = 12.0;
-            shape.set(vertex1: b2Vec2(-wallX, 0.0), vertex2: b2Vec2(-wallX, 20.0))
+            // Left angled wall - connects top left peg to bottom left peg
+            shape.set(vertex1: b2Vec2(bottomLeftX, bottomY), vertex2: b2Vec2(topLeftX, topY))
             let fixDef = b2FixtureDef()
             fixDef.shape = shape
             fixDef.density = 0.0
             fixDef.filter.categoryBits = CATEGORY_BOUNDARY
             ground.createFixture(fixDef)
             
-            // Right wall
-            shape.set(vertex1: b2Vec2(wallX, 0.0), vertex2: b2Vec2(wallX, 20.0))
+            // Right angled wall - connects top right peg to bottom right peg
+            shape.set(vertex1: b2Vec2(topRightX, topY), vertex2: b2Vec2(bottomRightX, bottomY))
             ground.createFixture(fixDef)
         }
         
         // Create pegs (circular obstacles)
         do {
-            let rows = 10
-            let pegRadius: b2Float = 0.3
-            let horizontalSpacing: b2Float = 2.0
-            let verticalSpacing: b2Float = 1.5
-            
             for row in 0 ..< rows {
                 let pegCount = row + 3
                 let rowWidth = horizontalSpacing * b2Float(pegCount - 1)
@@ -92,7 +111,7 @@ class Plinko: TestCase, b2ContactListener {
                 
                 for i in 0 ..< pegCount {
                     let x = startX + horizontalSpacing * b2Float(i)
-                    let y = 20.0 - verticalSpacing * b2Float(row)
+                    let y = baseY - verticalSpacing * b2Float(row)
                     
                     let bd = b2BodyDef()
                     bd.type = b2BodyType.staticBody
@@ -207,8 +226,22 @@ class Plinko: TestCase, b2ContactListener {
             let dropButton = NSButton(title: "Drop Ball", target: self, action: #selector(onDropButtonClicked))
             self.dropButton = dropButton
             
-            let stackView = NSStackView(views: [dropButton])
+            let launchManyButton = NSButton(title: "Launch 1000 Balls", target: self, action: #selector(onLaunchManyButtonClicked))
+            self.launchManyButton = launchManyButton
+            
+            let cancelButton = NSButton(title: "Cancel Launch", target: self, action: #selector(onCancelButtonClicked))
+            self.cancelButton = cancelButton
+            cancelButton.isEnabled = false
+            
+            let progressLabel = NSTextField(labelWithString: "")
+            progressLabel.alignment = .center
+            progressLabel.font = NSFont.systemFont(ofSize: 11)
+            progressLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            self.progressLabel = progressLabel
+            
+            let stackView = NSStackView(views: [dropButton, launchManyButton, cancelButton, progressLabel])
             stackView.orientation = .horizontal
+            stackView.spacing = 10
             _customView = stackView
         }
         return _customView
@@ -216,6 +249,62 @@ class Plinko: TestCase, b2ContactListener {
     
     @objc func onDropButtonClicked(_ sender: Any) {
         dropBall()
+    }
+    
+    @objc func onLaunchManyButtonClicked(_ sender: Any) {
+        launchMultipleBalls(count: 100)
+        launchManyButton?.isEnabled = false
+        cancelButton?.isEnabled = true
+    }
+    
+    @objc func onCancelButtonClicked(_ sender: Any) {
+        stopLaunching()
+    }
+    
+    func stopLaunching() {
+        if ballLaunchTimer != nil {
+            ballLaunchTimer?.invalidate()
+            ballLaunchTimer = nil
+        }
+        remainingBallsToLaunch = 0
+        updateProgressLabel()
+        launchManyButton?.isEnabled = true
+        cancelButton?.isEnabled = false
+    }
+    
+    func updateProgressLabel() {
+        if remainingBallsToLaunch > 0 {
+            let progress = totalBallsToLaunch - remainingBallsToLaunch
+            progressLabel?.stringValue = "\(progress)/\(totalBallsToLaunch) balls"
+        } else {
+            progressLabel?.stringValue = ""
+        }
+    }
+    
+    func launchMultipleBalls(count: Int) {
+        remainingBallsToLaunch = count
+        totalBallsToLaunch = count
+        updateProgressLabel()
+        
+        if ballLaunchTimer != nil {
+            ballLaunchTimer?.invalidate()
+            ballLaunchTimer = nil
+        }
+        
+        ballLaunchTimer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(launchTimerFired), userInfo: nil, repeats: true)
+    }
+    
+    @objc func launchTimerFired() {
+        for _ in 0..<5 {
+            if remainingBallsToLaunch > 0 {
+                dropBall()
+                remainingBallsToLaunch -= 1
+                updateProgressLabel()
+            } else {
+                stopLaunching()
+                break
+            }
+        }
     }
     
     func beginContact(_ contact: b2Contact) {
