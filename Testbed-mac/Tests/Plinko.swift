@@ -33,6 +33,11 @@ class Plinko: TestCase, b2ContactListener {
     var dropButton: NSButton?
     var bodiesToDestroy = [b2Body]()
     
+    // Define collision categories
+    let CATEGORY_BOUNDARY: UInt16 = 0x0001
+    let CATEGORY_PEG: UInt16 = 0x0002
+    let CATEGORY_BALL: UInt16 = 0x0004
+    
     override func prepare() {
         world.setContactListener(self)
         
@@ -47,11 +52,15 @@ class Plinko: TestCase, b2ContactListener {
             // Left wall
             let wallX: Float = 12.0;
             shape.set(vertex1: b2Vec2(-wallX, 0.0), vertex2: b2Vec2(-wallX, 20.0))
-            ground.createFixture(shape: shape, density: 0.0)
+            let fixDef = b2FixtureDef()
+            fixDef.shape = shape
+            fixDef.density = 0.0
+            fixDef.filter.categoryBits = CATEGORY_BOUNDARY
+            ground.createFixture(fixDef)
             
             // Right wall
             shape.set(vertex1: b2Vec2(wallX, 0.0), vertex2: b2Vec2(wallX, 20.0))
-            ground.createFixture(shape: shape, density: 0.0)
+            ground.createFixture(fixDef)
         }
         
         // Create pegs (circular obstacles)
@@ -83,6 +92,7 @@ class Plinko: TestCase, b2ContactListener {
                     fd.density = 0.0
                     fd.friction = 0.1
                     fd.restitution = 0.3
+                    fd.filter.categoryBits = CATEGORY_PEG
                     body.createFixture(fd)
                     
                     if row == rows - 1 {
@@ -99,6 +109,7 @@ class Plinko: TestCase, b2ContactListener {
                         wallFd.density = 0.0
                         wallFd.friction = 0.1
                         wallFd.restitution = 0.3
+                        wallFd.filter.categoryBits = CATEGORY_BOUNDARY
                         wallBody.createFixture(wallFd)
                         
                         if i < pegCount - 1 {
@@ -115,6 +126,7 @@ class Plinko: TestCase, b2ContactListener {
                             triggerFd.density = 0.0
                             triggerFd.isSensor = true
                             triggerFd.userData = "trigger" as NSString
+                            triggerFd.filter.categoryBits = CATEGORY_BOUNDARY
                             triggerBody.createFixture(triggerFd)
                         }
                     }
@@ -128,11 +140,15 @@ class Plinko: TestCase, b2ContactListener {
             let ballRadius: b2Float = 0.5
             
             // Random x position at the top
-            let xPos = randomFloat(-7.0, 7.0)
+            let maxHalfX: Float = 1.5
+            let xPos = randomFloat(-maxHalfX, maxHalfX)
+            
+            // Top row of pegs is at y=20.0, so spawn above that
+            let yPos: b2Float = 22.0
             
             let bd = b2BodyDef()
             bd.type = b2BodyType.dynamicBody
-            bd.position = b2Vec2(xPos, 20.0)
+            bd.position = b2Vec2(xPos, yPos)
             bd.bullet = true
             
             let ball = self.world.createBody(bd)
@@ -145,6 +161,11 @@ class Plinko: TestCase, b2ContactListener {
             fd.density = 1.0
             fd.friction = 0.0
             fd.restitution = 0.1
+            
+            // Set collision filtering
+            fd.filter.categoryBits = CATEGORY_BALL
+            fd.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PEG // Collide with everything except other balls
+            
             ball.createFixture(fd)
             
             // Apply a small random impulse
@@ -197,10 +218,12 @@ class Plinko: TestCase, b2ContactListener {
     
     override func step() {
         // Process any bodies queued for destruction
-        for body in bodiesToDestroy {
-            world.destroyBody(body)
+        if (bodiesToDestroy.count > 0) {
+            for body in bodiesToDestroy {
+                world.destroyBody(body)
+            }
+            bodiesToDestroy.removeAll()
         }
-        bodiesToDestroy.removeAll()
         
         // Any other step logic can go here
     }
