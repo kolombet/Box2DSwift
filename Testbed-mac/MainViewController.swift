@@ -37,7 +37,6 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
   var world: b2World?
   var groundBody: b2Body?
   var contactListener: ContactListener?
-  var bombLauncher: BombLauncher?
   var mouseJoint: b2MouseJoint?
   
   override func loadView() {
@@ -83,11 +82,9 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
     world.setDebugDraw(debugDraw)
     debugDraw.setFlags(settings.debugDrawFlag)
     
-    let bombLauncher = BombLauncher(world: world, renderView: debugDraw, viewCenter: settings.viewCenter)
     infoViewController?.infoView.world = world
     
     testCase.world = world
-    testCase.bombLauncher = bombLauncher
     testCase.contactListener = contactListener
     testCase.stepCount = 0
     testCase.debugDraw = debugDraw
@@ -99,14 +96,12 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
     
     self.world = world
     self.contactListener = contactListener
-    self.bombLauncher = bombLauncher
   }
   
   func simulationLoop(renderView: RenderView) {
     guard let testCase, let world else { return }
     
     updateCoordinate()
-    bombLauncher?.render()
     let timeStep = settings.calcTimeStep()
     settings.apply(world)
     contactListener?.clearPoints()
@@ -155,9 +150,6 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
       mouseJoint = world.createJoint(md)
       body.setAwake(true)
     }
-    else {
-      bombLauncher?.mouseDown(position: wp)
-    }
   }
   
   override func mouseDragged(with event: NSEvent) {
@@ -167,27 +159,17 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
     if let mouseJoint {
       mouseJoint.setTarget(wp)
     }
-    else {
-      bombLauncher?.mouseDragged(position: wp)
-    }
   }
   
   override func mouseUp(with event: NSEvent) {
-    let p = debugDraw.convert(event.locationInWindow, from: nil)
-    let wp = convertScreenToWorld(p,
-                                  size: debugDraw.bounds.size,
-                                  viewCenter: settings.viewCenter)
     if mouseJoint != nil {
       world?.destroyJoint(mouseJoint!)
       mouseJoint = nil
     }
-    else {
-      bombLauncher?.mouseUp(position: wp)
-    }
   }
   
   override func mouseExited(with event: NSEvent) {
-    bombLauncher?.mouseExited()
+    // Empty implementation after removing bomb launcher
   }
 
   // MARK: Settings
