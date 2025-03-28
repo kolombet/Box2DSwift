@@ -26,7 +26,7 @@
 
 import Cocoa
 import MetalKit
-
+import Foundation
 
 class MainViewController: NSViewController, RenderViewDelegate, SettingViewControllerDelegate {
   weak var infoViewController: InfoViewController?
@@ -105,6 +105,7 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
     let timeStep = settings.calcTimeStep()
     settings.apply(world)
     contactListener?.clearPoints()
+    
     world.step(timeStep: timeStep,
                velocityIterations: settings.velocityIterations,
                positionIterations: settings.positionIterations)

@@ -25,13 +25,28 @@ the original C++ code written by Erin Catto.
 */
 
 import AppKit
+import Foundation
 
+struct BallPosition: Codable {
+    let x: Float
+    let y: Float
+}
+
+struct BallPath: Codable {
+    let positions: [BallPosition]
+    let ballName: String
+}
 
 class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
     var dropButton: NSButton?
     var bodiesToDestroy = [b2Body]()
+    
+    // Ball tracking
+    var ballCounter = 0
+    var activeBalls = [String: b2Body]()
+    var ballPositions = [String: [BallPosition]]()
     
     // Define collision categories
     let CATEGORY_BOUNDARY: UInt16 = 0x0001
@@ -171,6 +186,18 @@ class Plinko: TestCase, b2ContactListener {
             // Apply a small random impulse
             let impulse = b2Vec2(randomFloat(-0.2, 0.2), 0.0)
             ball.applyLinearImpulse(impulse, point: ball.position, wake: true)
+            
+            // Generate a unique name for the ball
+            ballCounter += 1
+            let ballName = "ball_\(ballCounter)"
+            
+            // Add ball to tracking collections
+            activeBalls[ballName] = ball
+            ballPositions[ballName] = []
+            
+            // Record initial position
+            let position = BallPosition(x: ball.position.x, y: ball.position.y)
+            ballPositions[ballName]?.append(position)
         }
     }
     
@@ -216,15 +243,60 @@ class Plinko: TestCase, b2ContactListener {
         // Not needed for our implementation
     }
     
+    func saveBallPath(_ ballName: String, positions: [BallPosition]) {
+        let ballPath = BallPath(positions: positions, ballName: ballName)
+        
+        // Create encoder
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        do {
+            let jsonData = try encoder.encode(ballPath)
+            
+            // Create filename with Unix timestamp
+            let timestamp = Int(Date().timeIntervalSince1970)
+            
+            // Use the user's Documents directory instead of executable directory
+            let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            let documentsDirectory = paths[0]
+            let fileURL = documentsDirectory.appendingPathComponent("\(ballName)_\(timestamp).json")
+            
+            // Write to file
+            try jsonData.write(to: fileURL)
+            print("Saved ball path to \(fileURL.path)")
+        } catch {
+            print("Error saving ball path: \(error)")
+        }
+    }
+    
     override func step() {
+        // Record positions for all active balls
+        for (ballName, ball) in activeBalls {
+            let position = BallPosition(x: ball.position.x, y: ball.position.y)
+            ballPositions[ballName, default: []].append(position)
+        }
+        
         // Process any bodies queued for destruction
         if (bodiesToDestroy.count > 0) {
             for body in bodiesToDestroy {
+                // Find the ball name for this body
+                for (ballName, ballBody) in activeBalls {
+                    if ballBody === body {
+                        // Save the ball's path
+                        if let positions = ballPositions[ballName], !positions.isEmpty {
+                            saveBallPath(ballName, positions: positions)
+                        }
+                        // Remove tracking data
+                        activeBalls.removeValue(forKey: ballName)
+                        ballPositions.removeValue(forKey: ballName)
+                        break
+                    }
+                }
+                
+                // Destroy the body
                 world.destroyBody(body)
             }
             bodiesToDestroy.removeAll()
         }
-        
-        // Any other step logic can go here
     }
 } 
