@@ -27,12 +27,15 @@ the original C++ code written by Erin Catto.
 import AppKit
 
 
-class Plinko: TestCase {
+class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
     var dropButton: NSButton?
+    var bodiesToDestroy = [b2Body]()
     
     override func prepare() {
+        world.setContactListener(self)
+        
         // Create boundary
         do {
             let bd = b2BodyDef()
@@ -42,7 +45,7 @@ class Plinko: TestCase {
             let shape = b2EdgeShape()
             
             // Left wall
-            let wallX = 12.0;
+            let wallX: Float = 12.0;
             shape.set(vertex1: b2Vec2(-wallX, 0.0), vertex2: b2Vec2(-wallX, 20.0))
             ground.createFixture(shape: shape, density: 0.0)
             
@@ -105,13 +108,13 @@ class Plinko: TestCase {
                             let triggerBody = self.world.createBody(triggerBd)
                             
                             let triggerShape = b2PolygonShape()
-                            triggerShape.setAsBox(width: horizontalSpacing / 2.0, height: 0.5)
+                            triggerShape.setAsBox(halfWidth: horizontalSpacing / 2.0, halfHeight: 0.5)
                             
                             let triggerFd = b2FixtureDef()
                             triggerFd.shape = triggerShape
                             triggerFd.density = 0.0
                             triggerFd.isSensor = true
-                            triggerFd.userData = "trigger"
+                            triggerFd.userData = "trigger" as NSString
                             triggerBody.createFixture(triggerFd)
                         }
                     }
@@ -167,15 +170,38 @@ class Plinko: TestCase {
         dropBall()
     }
     
-    override func beginContact(_ contact: b2Contact) {
+    func beginContact(_ contact: b2Contact) {
         let fixtureA = contact.fixtureA
         let fixtureB = contact.fixtureB
         
         if fixtureA.userData as? String == "trigger" || fixtureB.userData as? String == "trigger" {
             let ballFixture = fixtureA.userData as? String == "trigger" ? fixtureB : fixtureA
             if ballFixture.body.type == b2BodyType.dynamicBody {
-                self.world.destroyBody(ballFixture.body)
+                // Queue the body for destruction instead of destroying it immediately
+                bodiesToDestroy.append(ballFixture.body)
             }
         }
+    }
+    
+    func endContact(_ contact: b2Contact) {
+        // Not needed for our implementation
+    }
+    
+    func preSolve(_ contact: b2Contact, oldManifold: b2Manifold) {
+        // Not needed for our implementation
+    }
+    
+    func postSolve(_ contact: b2Contact, impulse: b2ContactImpulse) {
+        // Not needed for our implementation
+    }
+    
+    override func step() {
+        // Process any bodies queued for destruction
+        for body in bodiesToDestroy {
+            world.destroyBody(body)
+        }
+        bodiesToDestroy.removeAll()
+        
+        // Any other step logic can go here
     }
 } 
