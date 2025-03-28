@@ -34,7 +34,7 @@ class Plinko: TestCase {
     
     override func prepare() {
         // Create boundary
-        b2Locally {
+        do {
             let bd = b2BodyDef()
             let ground = self.world.createBody(bd)
             
@@ -69,7 +69,7 @@ class Plinko: TestCase {
         }
         
         // Create pegs (circular obstacles)
-        b2Locally {
+        do {
             let rows = 10
             let pegRadius: b2Float = 0.3
             let horizontalSpacing: b2Float = 2.0
@@ -104,7 +104,7 @@ class Plinko: TestCase {
     }
     
     func dropBall() {
-        b2Locally {
+        do {
             let ballRadius: b2Float = 0.25
             
             // Random x position at the top
