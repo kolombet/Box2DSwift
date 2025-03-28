@@ -167,11 +167,5 @@ class CollisionProcessing: TestCase {
         ar.append(e1)
       }
     }
-    
-    for b in nuke {
-      if b !== bombLauncher.bomb {
-        world.destroyBody(b)
-      }
-    }
   }
 }

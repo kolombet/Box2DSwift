@@ -38,7 +38,6 @@ class TestCase {
   var stepCount = 0
   var contactListener: ContactListener!
   var world: b2World!
-  var bombLauncher: BombLauncher!
   var debugDraw: RenderView!
 }
 

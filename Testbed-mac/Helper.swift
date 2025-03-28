@@ -74,8 +74,9 @@ class Settings : CustomStringConvertible {
     hz = b2Float(60.0)
     velocityIterations = 8
     positionIterations = 3
-    drawShapes = true
-    drawJoints = true
+    let isDrawEnabled = false;
+    drawShapes = isDrawEnabled
+    drawJoints = isDrawEnabled
     drawAABBs = false
     drawContactPoints = false
     drawContactNormals = false

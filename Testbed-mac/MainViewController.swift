@@ -28,6 +28,26 @@ import Cocoa
 import MetalKit
 import Foundation
 
+import Foundation
+
+class TestCase {
+  class var title: String { get {""} }
+  required init() {}
+  func prepare() {}
+  func step() {}
+  var customView: NSView? { get { nil } }
+  
+  var settings = Settings()
+  var stepCount = 0
+  var contactListener: ContactListener!
+  var world: b2World!
+  var debugDraw: RenderView!
+}
+
+let testCases: [TestCase.Type] = [
+  Plinko.self,
+]
+
 class MainViewController: NSViewController, RenderViewDelegate, SettingViewControllerDelegate {
   weak var infoViewController: InfoViewController?
   

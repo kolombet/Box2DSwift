@@ -54,6 +54,10 @@ class Plinko: TestCase, b2ContactListener {
     var activeBalls = [String: b2Body]()
     var ballPositions = [String: [BallPosition]]()
     
+    // Rendering control
+    var renderingDisabled = false
+    var massLaunchActive = false
+    
     // Define collision categories
     let CATEGORY_BOUNDARY: UInt16 = 0x0001
     let CATEGORY_PEG: UInt16 = 0x0002
@@ -214,6 +218,9 @@ class Plinko: TestCase, b2ContactListener {
             activeBalls[ballName] = ball
             ballPositions[ballName] = []
             
+            // Disable launch many button when a ball is added
+            launchManyButton?.isEnabled = false
+            
             // Record initial position
             let position = BallPosition(x: ball.position.x, y: ball.position.y)
             ballPositions[ballName]?.append(position)
@@ -226,7 +233,7 @@ class Plinko: TestCase, b2ContactListener {
             let dropButton = NSButton(title: "Drop Ball", target: self, action: #selector(onDropButtonClicked))
             self.dropButton = dropButton
             
-            let launchManyButton = NSButton(title: "Launch 1000 Balls", target: self, action: #selector(onLaunchManyButtonClicked))
+            let launchManyButton = NSButton(title: "Launch 100 Balls", target: self, action: #selector(onLaunchManyButtonClicked))
             self.launchManyButton = launchManyButton
             
             let cancelButton = NSButton(title: "Cancel Launch", target: self, action: #selector(onCancelButtonClicked))
@@ -252,13 +259,17 @@ class Plinko: TestCase, b2ContactListener {
     }
     
     @objc func onLaunchManyButtonClicked(_ sender: Any) {
-        launchMultipleBalls(count: 100)
+        disableRendering()
+        massLaunchActive = true
+        launchMultipleBalls(count: 1000)
         launchManyButton?.isEnabled = false
         cancelButton?.isEnabled = true
     }
     
     @objc func onCancelButtonClicked(_ sender: Any) {
         stopLaunching()
+        enableRendering()
+        massLaunchActive = false
     }
     
     func stopLaunching() {
@@ -279,6 +290,14 @@ class Plinko: TestCase, b2ContactListener {
         } else {
             progressLabel?.stringValue = ""
         }
+    }
+    
+    func disableRendering() {
+        renderingDisabled = true
+    }
+    
+    func enableRendering() {
+        renderingDisabled = false
     }
     
     func launchMultipleBalls(count: Int) {
@@ -305,6 +324,16 @@ class Plinko: TestCase, b2ContactListener {
                 break
             }
         }
+    }
+    
+    func finishSimulation() {
+        // Re-enable rendering and UI
+        enableRendering()
+        launchManyButton?.isEnabled = activeBalls.isEmpty
+        cancelButton?.isEnabled = false
+        massLaunchActive = false
+        remainingBallsToLaunch = 0
+        updateProgressLabel()
     }
     
     func beginContact(_ contact: b2Contact) {
@@ -359,11 +388,17 @@ class Plinko: TestCase, b2ContactListener {
     }
     
     override func step() {
+        // If rendering is disabled, still need to process physics
+        // but don't need to update UI
+        
         // Record positions for all active balls
         for (ballName, ball) in activeBalls {
             let position = BallPosition(x: ball.position.x, y: ball.position.y)
             ballPositions[ballName, default: []].append(position)
         }
+        
+        // Update button state based on whether there are active balls
+        launchManyButton?.isEnabled = activeBalls.isEmpty && !massLaunchActive
         
         // Process any bodies queued for destruction
         if (bodiesToDestroy.count > 0) {
@@ -386,6 +421,11 @@ class Plinko: TestCase, b2ContactListener {
                 world.destroyBody(body)
             }
             bodiesToDestroy.removeAll()
+        }
+        
+        // Check if mass launch is active but balls are done moving
+        if massLaunchActive && remainingBallsToLaunch == 0 && activeBalls.isEmpty {
+            finishSimulation()
         }
     }
 } 
