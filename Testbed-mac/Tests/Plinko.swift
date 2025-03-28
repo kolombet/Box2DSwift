@@ -42,30 +42,13 @@ class Plinko: TestCase {
             let shape = b2EdgeShape()
             
             // Left wall
-            shape.set(vertex1: b2Vec2(-10.0, 0.0), vertex2: b2Vec2(-10.0, 20.0))
+            let wallX = 12.0;
+            shape.set(vertex1: b2Vec2(-wallX, 0.0), vertex2: b2Vec2(-wallX, 20.0))
             ground.createFixture(shape: shape, density: 0.0)
             
             // Right wall
-            shape.set(vertex1: b2Vec2(10.0, 0.0), vertex2: b2Vec2(10.0, 20.0))
+            shape.set(vertex1: b2Vec2(wallX, 0.0), vertex2: b2Vec2(wallX, 20.0))
             ground.createFixture(shape: shape, density: 0.0)
-            
-            // Bottom wall (with angled segments for buckets)
-            let segments = 8
-            let segmentWidth = 20.0 / Float(segments)
-            let segmentHalfWidth = segmentWidth / 2.0
-            
-            for i in 0 ..< segments {
-                let x1 = -10.0 + Float(i) * segmentWidth
-                let x2 = x1 + segmentWidth
-                let y1: Float = 0.0
-                let y2: Float = (i % 2 == 0) ? -0.5 : 0.0
-                
-                shape.set(vertex1: b2Vec2(x1, y1), vertex2: b2Vec2(x1 + segmentHalfWidth, y2))
-                ground.createFixture(shape: shape, density: 0.0)
-                
-                shape.set(vertex1: b2Vec2(x1 + segmentHalfWidth, y2), vertex2: b2Vec2(x2, y1))
-                ground.createFixture(shape: shape, density: 0.0)
-            }
         }
         
         // Create pegs (circular obstacles)
@@ -76,13 +59,13 @@ class Plinko: TestCase {
             let verticalSpacing: b2Float = 1.5
             
             for row in 0 ..< rows {
-                let pegCount = row + 5
+                let pegCount = row + 3
                 let rowWidth = horizontalSpacing * b2Float(pegCount - 1)
                 let startX = -rowWidth / 2.0
                 
                 for i in 0 ..< pegCount {
                     let x = startX + horizontalSpacing * b2Float(i)
-                    let y = 2.0 + verticalSpacing * b2Float(row)
+                    let y = 20.0 - verticalSpacing * b2Float(row)
                     
                     let bd = b2BodyDef()
                     bd.type = b2BodyType.staticBody
@@ -96,8 +79,42 @@ class Plinko: TestCase {
                     fd.shape = circle
                     fd.density = 0.0
                     fd.friction = 0.1
-                    fd.restitution = 0.7
+                    fd.restitution = 0.3
                     body.createFixture(fd)
+                    
+                    if row == rows - 1 {
+                        let wallBd = b2BodyDef()
+                        wallBd.type = b2BodyType.staticBody
+                        wallBd.position = b2Vec2(x, y - 1.0)
+                        let wallBody = self.world.createBody(wallBd)
+                        
+                        let wallShape = b2EdgeShape()
+                        wallShape.set(vertex1: b2Vec2(0.0, 0.0), vertex2: b2Vec2(0.0, -2.0))
+                        
+                        let wallFd = b2FixtureDef()
+                        wallFd.shape = wallShape
+                        wallFd.density = 0.0
+                        wallFd.friction = 0.1
+                        wallFd.restitution = 0.3
+                        wallBody.createFixture(wallFd)
+                        
+                        if i < pegCount - 1 {
+                            let triggerBd = b2BodyDef()
+                            triggerBd.type = b2BodyType.staticBody
+                            triggerBd.position = b2Vec2(x + horizontalSpacing / 2.0, y - 2.0)
+                            let triggerBody = self.world.createBody(triggerBd)
+                            
+                            let triggerShape = b2PolygonShape()
+                            triggerShape.setAsBox(width: horizontalSpacing / 2.0, height: 0.5)
+                            
+                            let triggerFd = b2FixtureDef()
+                            triggerFd.shape = triggerShape
+                            triggerFd.density = 0.0
+                            triggerFd.isSensor = true
+                            triggerFd.userData = "trigger"
+                            triggerBody.createFixture(triggerFd)
+                        }
+                    }
                 }
             }
         }
@@ -105,7 +122,7 @@ class Plinko: TestCase {
     
     func dropBall() {
         do {
-            let ballRadius: b2Float = 0.25
+            let ballRadius: b2Float = 0.5
             
             // Random x position at the top
             let xPos = randomFloat(-7.0, 7.0)
@@ -124,7 +141,7 @@ class Plinko: TestCase {
             fd.shape = circle
             fd.density = 1.0
             fd.friction = 0.0
-            fd.restitution = 0.3
+            fd.restitution = 0.1
             ball.createFixture(fd)
             
             // Apply a small random impulse
@@ -148,5 +165,17 @@ class Plinko: TestCase {
     
     @objc func onDropButtonClicked(_ sender: Any) {
         dropBall()
+    }
+    
+    override func beginContact(_ contact: b2Contact) {
+        let fixtureA = contact.fixtureA
+        let fixtureB = contact.fixtureB
+        
+        if fixtureA.userData as? String == "trigger" || fixtureB.userData as? String == "trigger" {
+            let ballFixture = fixtureA.userData as? String == "trigger" ? fixtureB : fixtureA
+            if ballFixture.body.type == b2BodyType.dynamicBody {
+                self.world.destroyBody(ballFixture.body)
+            }
+        }
     }
 } 
