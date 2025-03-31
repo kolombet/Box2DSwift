@@ -40,6 +40,21 @@ struct BallPath: Codable {
 class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
+    // Board Configuration
+    private let BOARD_ROWS = 13
+    private let TOP_PEG_COUNT = 4
+    private let PEG_RADIUS: b2Float = 0.3
+    private let HORIZONTAL_SPACING: b2Float = 2.0
+    private let VERTICAL_SPACING: b2Float = 1.5
+    private let BASE_Y: b2Float = 20.0
+    private let BALL_RADIUS: b2Float = 0.5
+    private let BALL_SPAWN_Y: b2Float = 22.0
+    private let BALL_SPAWN_MAX_X: Float = 1.5
+    private let BALL_SPAWN_IMPULSE_MIN: Float = -0.2
+    private let BALL_SPAWN_IMPULSE_MAX: Float = 0.2
+    private let BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
+    private let BALLS_PER_LAUNCH_BATCH = 5
+    
     var dropButton: NSButton?
     var launchManyButton: NSButton?
     var cancelButton: NSButton?
@@ -66,24 +81,15 @@ class Plinko: TestCase, b2ContactListener {
     override func prepare() {
         world.setContactListener(self)
         
-        // Configuration values
-        let rows = 10
-        let pegRadius: b2Float = 0.3
-        let horizontalSpacing: b2Float = 2.0
-        let verticalSpacing: b2Float = 1.5
-        let baseY: b2Float = 20.0
-        
-        // Calculate wall coordinates based on peg layout
-        let topRowPegCount = 3
-        let bottomRowPegCount = rows + 2
-        let topRowWidth = horizontalSpacing * b2Float(topRowPegCount - 1)
-        let bottomRowWidth = horizontalSpacing * b2Float(bottomRowPegCount - 1)
+        let bottomRowPegCount = BOARD_ROWS + TOP_PEG_COUNT
+        let topRowWidth = HORIZONTAL_SPACING * b2Float(TOP_PEG_COUNT - 1)
+        let bottomRowWidth = HORIZONTAL_SPACING * b2Float(bottomRowPegCount - 1)
         let topLeftX = -topRowWidth / 2.0
         let topRightX = topRowWidth / 2.0
         let bottomLeftX = -bottomRowWidth / 2.0
         let bottomRightX = bottomRowWidth / 2.0
-        let topY = baseY
-        let bottomY: b2Float = baseY - verticalSpacing * b2Float(rows - 1)
+        let topY = BASE_Y
+        let bottomY: b2Float = BASE_Y - VERTICAL_SPACING * b2Float(BOARD_ROWS - 1)
         
         // Create boundary
         do {
@@ -98,6 +104,8 @@ class Plinko: TestCase, b2ContactListener {
             let fixDef = b2FixtureDef()
             fixDef.shape = shape
             fixDef.density = 0.0
+            fixDef.friction = 0.1
+            fixDef.restitution = 0.3
             fixDef.filter.categoryBits = CATEGORY_BOUNDARY
             ground.createFixture(fixDef)
             
@@ -108,14 +116,14 @@ class Plinko: TestCase, b2ContactListener {
         
         // Create pegs (circular obstacles)
         do {
-            for row in 0 ..< rows {
-                let pegCount = row + 3
-                let rowWidth = horizontalSpacing * b2Float(pegCount - 1)
+            for row in 0 ..< BOARD_ROWS {
+                let pegCount = row + TOP_PEG_COUNT
+                let rowWidth = HORIZONTAL_SPACING * b2Float(pegCount - 1)
                 let startX = -rowWidth / 2.0
                 
                 for i in 0 ..< pegCount {
-                    let x = startX + horizontalSpacing * b2Float(i)
-                    let y = baseY - verticalSpacing * b2Float(row)
+                    let x = startX + HORIZONTAL_SPACING * b2Float(i)
+                    let y = BASE_Y - VERTICAL_SPACING * b2Float(row)
                     
                     let bd = b2BodyDef()
                     bd.type = b2BodyType.staticBody
@@ -123,7 +131,7 @@ class Plinko: TestCase, b2ContactListener {
                     let body = self.world.createBody(bd)
                     
                     let circle = b2CircleShape()
-                    circle.radius = pegRadius
+                    circle.radius = PEG_RADIUS
                     
                     let fd = b2FixtureDef()
                     fd.shape = circle
@@ -133,7 +141,7 @@ class Plinko: TestCase, b2ContactListener {
                     fd.filter.categoryBits = CATEGORY_PEG
                     body.createFixture(fd)
                     
-                    if row == rows - 1 {
+                    if row == BOARD_ROWS - 1 {
                         let wallBd = b2BodyDef()
                         wallBd.type = b2BodyType.staticBody
                         wallBd.position = b2Vec2(x, y - 1.0)
@@ -153,11 +161,11 @@ class Plinko: TestCase, b2ContactListener {
                         if i < pegCount - 1 {
                             let triggerBd = b2BodyDef()
                             triggerBd.type = b2BodyType.staticBody
-                            triggerBd.position = b2Vec2(x + horizontalSpacing / 2.0, y - 2.0)
+                            triggerBd.position = b2Vec2(x + HORIZONTAL_SPACING / 2.0, y - 2.0)
                             let triggerBody = self.world.createBody(triggerBd)
                             
                             let triggerShape = b2PolygonShape()
-                            triggerShape.setAsBox(halfWidth: horizontalSpacing / 2.0, halfHeight: 0.5)
+                            triggerShape.setAsBox(halfWidth: HORIZONTAL_SPACING / 2.0, halfHeight: 0.5)
                             
                             let triggerFd = b2FixtureDef()
                             triggerFd.shape = triggerShape
@@ -175,24 +183,17 @@ class Plinko: TestCase, b2ContactListener {
     
     func dropBall() {
         do {
-            let ballRadius: b2Float = 0.5
-            
-            // Random x position at the top
-            let maxHalfX: Float = 1.5
-            let xPos = randomFloat(-maxHalfX, maxHalfX)
-            
-            // Top row of pegs is at y=20.0, so spawn above that
-            let yPos: b2Float = 22.0
+            let xPos = randomFloat(-BALL_SPAWN_MAX_X, BALL_SPAWN_MAX_X)
             
             let bd = b2BodyDef()
             bd.type = b2BodyType.dynamicBody
-            bd.position = b2Vec2(xPos, yPos)
+            bd.position = b2Vec2(xPos, BALL_SPAWN_Y)
             bd.bullet = true
             
             let ball = self.world.createBody(bd)
             
             let circle = b2CircleShape()
-            circle.radius = ballRadius
+            circle.radius = BALL_RADIUS
             
             let fd = b2FixtureDef()
             fd.shape = circle
@@ -200,14 +201,12 @@ class Plinko: TestCase, b2ContactListener {
             fd.friction = 0.0
             fd.restitution = 0.1
             
-            // Set collision filtering
             fd.filter.categoryBits = CATEGORY_BALL
-            fd.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PEG // Collide with everything except other balls
+            fd.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PEG
             
             ball.createFixture(fd)
             
-            // Apply a small random impulse
-            let impulse = b2Vec2(randomFloat(-0.2, 0.2), 0.0)
+            let impulse = b2Vec2(randomFloat(BALL_SPAWN_IMPULSE_MIN, BALL_SPAWN_IMPULSE_MAX), 0.0)
             ball.applyLinearImpulse(impulse, point: ball.position, wake: true)
             
             // Generate a unique name for the ball
@@ -261,7 +260,7 @@ class Plinko: TestCase, b2ContactListener {
     @objc func onLaunchManyButtonClicked(_ sender: Any) {
         disableRendering()
         massLaunchActive = true
-        launchMultipleBalls(count: 1000)
+        launchMultipleBalls(count: 100)
         launchManyButton?.isEnabled = false
         cancelButton?.isEnabled = true
     }
@@ -310,11 +309,11 @@ class Plinko: TestCase, b2ContactListener {
             ballLaunchTimer = nil
         }
         
-        ballLaunchTimer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(launchTimerFired), userInfo: nil, repeats: true)
+        ballLaunchTimer = Timer.scheduledTimer(timeInterval: BALL_LAUNCH_INTERVAL, target: self, selector: #selector(launchTimerFired), userInfo: nil, repeats: true)
     }
     
     @objc func launchTimerFired() {
-        for _ in 0..<5 {
+        for _ in 0..<BALLS_PER_LAUNCH_BATCH {
             if remainingBallsToLaunch > 0 {
                 dropBall()
                 remainingBallsToLaunch -= 1
