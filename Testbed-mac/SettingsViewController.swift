@@ -166,6 +166,9 @@ class SettingsViewController: NSTabViewController {
     // Save settings to UserDefaults
     settings.saveToUserDefaults()
     
+    // Reload settings from UserDefaults to ensure all values are updated
+    settings.loadFromUserDefaults()
+    
     // Apply settings immediately
     delegate?.didSettingsChanged(settings)
     
@@ -378,6 +381,12 @@ class BasicSettingsViewController : NSViewController {
     timeOfImpactSwitch.controlSize = .regular
     subSteppingSwitch.controlSize = .regular
     
+    // Create Save & Apply button
+    let saveApplyButton = NSButton(title: "Save & Apply", target: nil, action: nil)
+    saveApplyButton.bezelStyle = .rounded
+    saveApplyButton.target = self.parent
+    saveApplyButton.action = #selector(SettingsViewController.saveAndApplySettings)
+    
     let gridView = NSGridView(views: [
       [velocityIterationsLabel, velocityIterationsStack],
       [positionIterationsLabel, positionIterationsStack],
@@ -386,7 +395,14 @@ class BasicSettingsViewController : NSViewController {
       [warmStartingLabel, warmStartingSwitch],
       [timeOfImpactLabel, timeOfImpactSwitch],
       [subSteppingLabel, subSteppingSwitch],
+      [NSView(), saveApplyButton], // Add button directly to the grid
     ])
+    
+    // Center the button in the cell
+    gridView.cell(atColumnIndex: 1, rowIndex: 7).xPlacement = .center
+    
+    // Set a height for the spacer row
+    gridView.row(at: 7).height = 60
     
     // Make column 1 (with the controls) expand to fill available space
     gridView.column(at: 1).xPlacement = .fill
@@ -657,6 +673,12 @@ class DrawSettingsViewController : NSViewController {
     statisticsSwitch.controlSize = .regular
     profileSwitch.controlSize = .regular
     
+    // Create Save & Apply button
+    let saveApplyButton = NSButton(title: "Save & Apply", target: nil, action: nil)
+    saveApplyButton.bezelStyle = .rounded
+    saveApplyButton.target = self.parent
+    saveApplyButton.action = #selector(SettingsViewController.saveAndApplySettings)
+    
     let gridView = NSGridView(views: [
       [shapesLabel, shapesSwitch],
       [jointsLabel, jointsSwitch],
@@ -669,7 +691,14 @@ class DrawSettingsViewController : NSViewController {
       [statisticsLabel, statisticsSwitch],
       [profileLabel, profileSwitch],
       [zoomLabel, zoomContainer],
+      [NSView(), saveApplyButton], // Add button directly to the grid
     ])
+    
+    // Center the button in the cell
+    gridView.cell(atColumnIndex: 1, rowIndex: 11).xPlacement = .center
+    
+    // Set a height for the spacer row
+    gridView.row(at: 11).height = 60
     
     // Make column 1 (with the controls) expand to fill available space
     gridView.column(at: 1).xPlacement = .fill

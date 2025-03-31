@@ -41,7 +41,7 @@ class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
     // Board Configuration - These values will be replaced by settings
-    private var BOARD_ROWS: Int = 5
+    private var BOARD_ROWS: Int = 13
     private var TOP_PEG_COUNT: Int = 4
     private var PEG_RADIUS: b2Float = 3
     private var PIN_SPACING_X: b2Float = 15.0
