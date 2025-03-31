@@ -67,9 +67,19 @@ func calcViewBounds(viewSize: CGSize, viewCenter: b2Vec2, extents: b2Vec2) -> (l
 }
 
 class Settings : CustomStringConvertible {
-  static let extents = b2Vec2(25.0, 25.0)
+  var zoomScale: Float = 10
+  static var baseExtents = b2Vec2(25.0, 25.0)
+  
+  static var extents: b2Vec2 {
+    let scale = Settings.sharedSettings?.zoomScale ?? 1.0
+    return b2Vec2(baseExtents.x * scale, baseExtents.y * scale)
+  }
+  
+  static var sharedSettings: Settings?
+  
   init() {
-    assert(Settings.extents.x == Settings.extents.y)
+    Settings.sharedSettings = self
+    assert(Settings.baseExtents.x == Settings.baseExtents.y)
     viewCenter = b2Vec2(0.0, 20.0)
     hz = b2Float(60.0)
     velocityIterations = 8
@@ -157,7 +167,7 @@ class Settings : CustomStringConvertible {
   }
   
   var description: String {
-    return "Settings[viewCenter=\(viewCenter),hz=\(hz),velocityIterations=\(velocityIterations),positionIterations=\(positionIterations),drawShapes=\(drawShapes),drawJoints=\(drawJoints),drawAABBs=\(drawAABBs),drawContactPoints=\(drawContactPoints),drawContactNormals=\(drawContactNormals),drawFrictionImpulse=\(drawFrictionImpulse),drawCOMs=\(drawCOMs),drawStats=\(drawStats),drawProfile=\(drawProfile),enableWarmStarting=\(enableWarmStarting),enableContinuous=\(enableContinuous),enableSubStepping=\(enableSubStepping),enableSleep=\(enableSleep),pause=\(pause),singleStep=\(singleStep)]"
+    return "Settings[viewCenter=\(viewCenter),hz=\(hz),velocityIterations=\(velocityIterations),positionIterations=\(positionIterations),drawShapes=\(drawShapes),drawJoints=\(drawJoints),drawAABBs=\(drawAABBs),drawContactPoints=\(drawContactPoints),drawContactNormals=\(drawContactNormals),drawFrictionImpulse=\(drawFrictionImpulse),drawCOMs=\(drawCOMs),drawStats=\(drawStats),drawProfile=\(drawProfile),enableWarmStarting=\(enableWarmStarting),enableContinuous=\(enableContinuous),enableSubStepping=\(enableSubStepping),enableSleep=\(enableSleep),pause=\(pause),singleStep=\(singleStep),zoomScale=\(zoomScale)]"
   }
 }
 

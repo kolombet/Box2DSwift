@@ -370,6 +370,8 @@ class DrawSettingsViewController : NSViewController {
       centerOfMassesSwitch.state = settings.drawCOMs ? .on : .off
       statisticsSwitch.state = settings.drawStats ? .on : .off
       profileSwitch.state = settings.drawProfile ? .on : .off
+      zoomSlider.floatValue = settings.zoomScale
+      zoomTextField.stringValue = String(format: "%.1f", settings.zoomScale)
     }
   }
   weak var delegate: SettingViewControllerDelegate? = nil
@@ -534,6 +536,28 @@ class DrawSettingsViewController : NSViewController {
     delegate?.didSettingsChanged(settings)
   }
 
+  // MARK: zoom scale controls
+  let zoomLabel = NSTextField(labelWithString: "Zoom Scale:")
+  let zoomTextField = NSTextField(string: "1.0")
+  let zoomSlider = NSSlider(value: 1.0, minValue: 0.5, maxValue: 3.0, target: nil, action: nil)
+  
+  @objc func onZoomSliderChanged(_ sender: NSSlider) {
+    guard let settings else { return }
+    let scale = sender.floatValue
+    settings.zoomScale = scale
+    zoomTextField.stringValue = String(format: "%.1f", scale)
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onZoomTextFieldChanged(_ sender: NSTextField) {
+    guard let settings else { return }
+    if let scale = Float(sender.stringValue) {
+      settings.zoomScale = scale
+      zoomSlider.floatValue = scale
+      delegate?.didSettingsChanged(settings)
+    }
+  }
+
   override func loadView() {
     view = NSView(frame: .zero)
   }
@@ -542,6 +566,16 @@ class DrawSettingsViewController : NSViewController {
     super.viewDidLoad()
     
     title = "Draw"
+    
+    zoomSlider.target = self
+    zoomSlider.action = #selector(onZoomSliderChanged)
+    zoomTextField.formatter = NumberFormatter()
+    zoomTextField.target = self
+    zoomTextField.action = #selector(onZoomTextFieldChanged)
+    
+    let zoomContainer = NSStackView(views: [zoomSlider, zoomTextField])
+    zoomContainer.orientation = .horizontal
+    zoomContainer.spacing = 8
     
     let gridView = NSGridView(views: [
       [shapesLabel, shapesSwitch],
@@ -554,6 +588,7 @@ class DrawSettingsViewController : NSViewController {
       [centerOfMassesLabel, centerOfMassesSwitch],
       [statisticsLabel, statisticsSwitch],
       [profileLabel, profileSwitch],
+      [zoomLabel, zoomContainer],
     ])
     gridView.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(gridView)

@@ -43,13 +43,13 @@ class Plinko: TestCase, b2ContactListener {
     // Board Configuration
     private let BOARD_ROWS = 13
     private let TOP_PEG_COUNT = 4
-    private let PEG_RADIUS: b2Float = 0.3
-    private let HORIZONTAL_SPACING: b2Float = 2.0
-    private let VERTICAL_SPACING: b2Float = 1.5
-    private let BASE_Y: b2Float = 20.0
-    private let BALL_RADIUS: b2Float = 0.5
-    private let BALL_SPAWN_Y: b2Float = 22.0
-    private let BALL_SPAWN_MAX_X: Float = 1.5
+    private let PEG_RADIUS: b2Float = 3
+    private let PIN_SPACING_X: b2Float = 15.0
+    private let PIN_SPACING_Y: b2Float = 15.0
+    private let BASE_Y: b2Float = 200.0
+    private let BALL_RADIUS: b2Float = 6
+    private let BALL_SPAWN_Y: b2Float = 220.0
+    private let BALL_SPAWN_MAX_X: Float = 15.0
     private let BALL_SPAWN_IMPULSE_MIN: Float = -0.2
     private let BALL_SPAWN_IMPULSE_MAX: Float = 0.2
     private let BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
@@ -79,17 +79,23 @@ class Plinko: TestCase, b2ContactListener {
     let CATEGORY_BALL: UInt16 = 0x0004
     
     override func prepare() {
+        // Set stronger gravity for balls
+        world.gravity = b2Vec2(0.0, -200.0)  // Increase negative Y gravity
+        
         world.setContactListener(self)
         
-        let bottomRowPegCount = BOARD_ROWS + TOP_PEG_COUNT
-        let topRowWidth = HORIZONTAL_SPACING * b2Float(TOP_PEG_COUNT - 1)
-        let bottomRowWidth = HORIZONTAL_SPACING * b2Float(bottomRowPegCount - 1)
+        let effectivePinSpacingX = PIN_SPACING_X + 2 * PEG_RADIUS
+        let effectivePinSpacingY = PIN_SPACING_Y + 2 * PEG_RADIUS
+        
+        let bottomRowPegCount = BOARD_ROWS + TOP_PEG_COUNT - 1
+        let topRowWidth = effectivePinSpacingX * b2Float(TOP_PEG_COUNT - 1)
+        let bottomRowWidth = effectivePinSpacingX * b2Float(bottomRowPegCount - 1)
         let topLeftX = -topRowWidth / 2.0
         let topRightX = topRowWidth / 2.0
         let bottomLeftX = -bottomRowWidth / 2.0
         let bottomRightX = bottomRowWidth / 2.0
         let topY = BASE_Y
-        let bottomY: b2Float = BASE_Y - VERTICAL_SPACING * b2Float(BOARD_ROWS - 1)
+        let bottomY: b2Float = BASE_Y - effectivePinSpacingY * b2Float(BOARD_ROWS - 1)
         
         // Create boundary
         do {
@@ -118,12 +124,12 @@ class Plinko: TestCase, b2ContactListener {
         do {
             for row in 0 ..< BOARD_ROWS {
                 let pegCount = row + TOP_PEG_COUNT
-                let rowWidth = HORIZONTAL_SPACING * b2Float(pegCount - 1)
+                let rowWidth = effectivePinSpacingX * b2Float(pegCount - 1)
                 let startX = -rowWidth / 2.0
                 
                 for i in 0 ..< pegCount {
-                    let x = startX + HORIZONTAL_SPACING * b2Float(i)
-                    let y = BASE_Y - VERTICAL_SPACING * b2Float(row)
+                    let x = startX + effectivePinSpacingX * b2Float(i)
+                    let y = BASE_Y - effectivePinSpacingY * b2Float(row)
                     
                     let bd = b2BodyDef()
                     bd.type = b2BodyType.staticBody
@@ -161,11 +167,11 @@ class Plinko: TestCase, b2ContactListener {
                         if i < pegCount - 1 {
                             let triggerBd = b2BodyDef()
                             triggerBd.type = b2BodyType.staticBody
-                            triggerBd.position = b2Vec2(x + HORIZONTAL_SPACING / 2.0, y - 2.0)
+                            triggerBd.position = b2Vec2(x + effectivePinSpacingX / 2.0, y - 2.0)
                             let triggerBody = self.world.createBody(triggerBd)
                             
                             let triggerShape = b2PolygonShape()
-                            triggerShape.setAsBox(halfWidth: HORIZONTAL_SPACING / 2.0, halfHeight: 0.5)
+                            triggerShape.setAsBox(halfWidth: effectivePinSpacingX / 2.0, halfHeight: 0.5)
                             
                             let triggerFd = b2FixtureDef()
                             triggerFd.shape = triggerShape
