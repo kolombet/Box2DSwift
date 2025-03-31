@@ -230,6 +230,14 @@ class MainViewController: NSViewController, RenderViewDelegate, SettingViewContr
     infoViewController?.infoView.enableStats = settings.drawStats
     debugDraw.metalKitView.preferredFramesPerSecond = Int(settings.hz)
     debugDraw.setFlags(settings.debugDrawFlag)
+    
+    // When zoom scale changes, update the view bounds
+    updateCoordinate()
+    
+    // Update test case if it's a Plinko instance
+    if let plinkoCase = testCase as? Plinko, plinkoCase.checkSettingsChanged() {
+      plinkoCase.rebuildWorld()
+    }
   }
 }
 

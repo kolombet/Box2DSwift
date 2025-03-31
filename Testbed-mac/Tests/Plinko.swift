@@ -40,20 +40,20 @@ struct BallPath: Codable {
 class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
-    // Board Configuration
-    private let BOARD_ROWS = 13
-    private let TOP_PEG_COUNT = 4
-    private let PEG_RADIUS: b2Float = 3
-    private let PIN_SPACING_X: b2Float = 15.0
-    private let PIN_SPACING_Y: b2Float = 15.0
-    private let BASE_Y: b2Float = 200.0
-    private let BALL_RADIUS: b2Float = 6
-    private let BALL_SPAWN_Y: b2Float = 220.0
-    private let BALL_SPAWN_MAX_X: Float = 15.0
-    private let BALL_SPAWN_IMPULSE_MIN: Float = -0.2
-    private let BALL_SPAWN_IMPULSE_MAX: Float = 0.2
-    private let BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
-    private let BALLS_PER_LAUNCH_BATCH = 5
+    // Board Configuration - These values will be replaced by settings
+    private var BOARD_ROWS: Int = 5
+    private var TOP_PEG_COUNT: Int = 4
+    private var PEG_RADIUS: b2Float = 3
+    private var PIN_SPACING_X: b2Float = 15.0
+    private var PIN_SPACING_Y: b2Float = 15.0
+    private var BASE_Y: b2Float = 200.0
+    private var BALL_RADIUS: b2Float = 6
+    private var BALL_SPAWN_Y: b2Float = 220.0
+    private var BALL_SPAWN_MAX_X: Float = 15.0
+    private var BALL_SPAWN_IMPULSE_MIN: Float = -0.2
+    private var BALL_SPAWN_IMPULSE_MAX: Float = 0.2
+    private var BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
+    private var BALLS_PER_LAUNCH_BATCH = 5
     
     var dropButton: NSButton?
     var launchManyButton: NSButton?
@@ -79,8 +79,16 @@ class Plinko: TestCase, b2ContactListener {
     let CATEGORY_BALL: UInt16 = 0x0004
     
     override func prepare() {
-        // Set stronger gravity for balls
-        world.gravity = b2Vec2(0.0, -200.0)  // Increase negative Y gravity
+        // Update local variables from settings
+        BOARD_ROWS = settings.boardRows
+        TOP_PEG_COUNT = settings.topPegCount
+        PEG_RADIUS = settings.pegRadius
+        PIN_SPACING_X = settings.pinSpacingX
+        PIN_SPACING_Y = settings.pinSpacingY
+        BALL_RADIUS = settings.ballRadius
+        
+        // Set gravity from settings
+        world.gravity = b2Vec2(0.0, settings.physicsGravity)
         
         world.setContactListener(self)
         
@@ -396,6 +404,12 @@ class Plinko: TestCase, b2ContactListener {
         // If rendering is disabled, still need to process physics
         // but don't need to update UI
         
+        // Check for settings changes that require rebuilding
+        if checkSettingsChanged() {
+            rebuildWorld()
+            return
+        }
+        
         // Record positions for all active balls
         for (ballName, ball) in activeBalls {
             let position = BallPosition(x: ball.position.x, y: ball.position.y)
@@ -432,5 +446,45 @@ class Plinko: TestCase, b2ContactListener {
         if massLaunchActive && remainingBallsToLaunch == 0 && activeBalls.isEmpty {
             finishSimulation()
         }
+    }
+    
+    // Helper method to check if settings have changed that require rebuilding
+    func checkSettingsChanged() -> Bool {
+        return BOARD_ROWS != settings.boardRows ||
+               TOP_PEG_COUNT != settings.topPegCount ||
+               PEG_RADIUS != settings.pegRadius ||
+               PIN_SPACING_X != settings.pinSpacingX ||
+               PIN_SPACING_Y != settings.pinSpacingY ||
+               BALL_RADIUS != settings.ballRadius ||
+               world.gravity.y != settings.physicsGravity
+    }
+    
+    // Helper method to rebuild the world with new settings
+    func rebuildWorld() {
+        // Clear existing world
+        for (_, ball) in activeBalls {
+            world.destroyBody(ball)
+        }
+        activeBalls.removeAll()
+        ballPositions.removeAll()
+        bodiesToDestroy.removeAll()
+        
+        // Must recreate all static bodies as well
+        var bodyToDestroy: b2Body? = world.getBodyList()
+        while let body = bodyToDestroy {
+            let nextBody = body.getNext() // Get next before destroying current
+            if body.type == b2BodyType.staticBody {
+                world.destroyBody(body)
+            }
+            bodyToDestroy = nextBody
+        }
+        
+        // Update gravity if changed
+        if world.gravity.y != settings.physicsGravity {
+            world.gravity = b2Vec2(0.0, settings.physicsGravity)
+        }
+        
+        // Prepare the world again with new settings
+        prepare()
     }
 } 

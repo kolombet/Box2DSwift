@@ -34,22 +34,28 @@ class SettingsViewController: NSTabViewController {
   static let lastPreferencesPaneIdentifier = "SettingsViewController.lastPreferencesPaneIdentifier"
   static let inset: CGFloat = 16
   var lastFrameSize: NSSize = .zero
+  
+  // Save button for applying and persisting settings
+  private var saveButton: NSButton?
 
   weak var settings: Settings? = nil {
     didSet {
       basicSettingsViewController.settings = settings
       drawSettingsViewController.settings = settings
+      plinkoSettingsViewController.settings = settings
     }
   }
   weak var delegate: SettingViewControllerDelegate? = nil {
     didSet {
       basicSettingsViewController.delegate = delegate
       drawSettingsViewController.delegate = delegate
+      plinkoSettingsViewController.delegate = delegate
     }
   }
 
   lazy var basicSettingsViewController = BasicSettingsViewController()
   lazy var drawSettingsViewController = DrawSettingsViewController()
+  lazy var plinkoSettingsViewController = PlinkoSettingsViewController()
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -66,6 +72,11 @@ class SettingsViewController: NSTabViewController {
     drawItem.label = "Draw"
     addTabViewItem(drawItem)
     
+    let plinkoItem = NSTabViewItem(viewController: plinkoSettingsViewController)
+    plinkoItem.image = NSImage(systemSymbolName: "circle.grid.2x2", accessibilityDescription: nil)!
+    plinkoItem.label = "Plinko"
+    addTabViewItem(plinkoItem)
+    
     if let identifier = UserDefaults.standard.object(forKey: SettingsViewController.lastPreferencesPaneIdentifier) as? String {
       for i in 0 ..< tabViewItems.count {
         let item = tabViewItems[i]
@@ -74,6 +85,9 @@ class SettingsViewController: NSTabViewController {
         }
       }
     }
+    
+    // Setup Save & Apply button
+    setupSaveButton()
   }
 
   override var selectedTabViewItemIndex: Int {
@@ -141,6 +155,31 @@ class SettingsViewController: NSTabViewController {
     })
   }
   
+  private func setupSaveButton() {
+    // Button is now created in PlinkoSettingsViewController directly in the grid
+    // This method is kept for backward compatibility but does nothing
+  }
+  
+  @objc func saveAndApplySettings() {
+    guard let settings = settings else { return }
+    
+    // Save settings to UserDefaults
+    settings.saveToUserDefaults()
+    
+    // Apply settings immediately
+    delegate?.didSettingsChanged(settings)
+    
+    // Provide visual feedback on the button if available
+    if let button = view.window?.contentView?.subviews.first(where: { $0 is NSButton && ($0 as? NSButton)?.title == "Save & Apply" }) as? NSButton {
+      let originalTitle = button.title
+      button.title = "Saved!"
+      
+      // Reset button title after a short delay
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        button.title = originalTitle
+      }
+    }
+  }
 }
 
 class BasicSettingsViewController : NSViewController {
@@ -289,6 +328,7 @@ class BasicSettingsViewController : NSViewController {
     velocityIterationsField.placeholderString = "8"
     velocityIterationsField.target = self
     velocityIterationsField.action = #selector(onVelocityIterationsFieldChanged)
+    velocityIterationsField.widthAnchor.constraint(equalToConstant: 80).isActive = true
     
     velocityIterationsStepper.minValue = 0
     velocityIterationsStepper.maxValue = 100
@@ -300,6 +340,8 @@ class BasicSettingsViewController : NSViewController {
 
     let velocityIterationsStack = NSStackView(views: [velocityIterationsField, velocityIterationsStepper])
     velocityIterationsStack.orientation = .horizontal
+    velocityIterationsStack.spacing = 8
+    velocityIterationsStack.setHuggingPriority(.defaultHigh, for: .horizontal)
     
     // MARK: row 2: Position Iterations
     let positionIterationsLabel = NSTextField(labelWithString: "Position Iterations:")
@@ -308,6 +350,7 @@ class BasicSettingsViewController : NSViewController {
     positionIterationsField.placeholderString = "3"
     positionIterationsField.target = self
     positionIterationsField.action = #selector(onPositionIterationsFieldChanged)
+    positionIterationsField.widthAnchor.constraint(equalToConstant: 80).isActive = true
     
     positionIterationsStepper.minValue = 0
     positionIterationsStepper.maxValue = 100
@@ -319,6 +362,8 @@ class BasicSettingsViewController : NSViewController {
 
     let positionIterationsStack = NSStackView(views: [positionIterationsField, positionIterationsStepper])
     positionIterationsStack.orientation = .horizontal
+    positionIterationsStack.spacing = 8
+    positionIterationsStack.setHuggingPriority(.defaultHigh, for: .horizontal)
 
     // MARK: row 3: Hertz
     let hertzLabel = NSTextField(labelWithString: "Hertz:")
@@ -326,6 +371,12 @@ class BasicSettingsViewController : NSViewController {
     hertzPopupButton.addItems(withTitles: ["60 Hz", "30 Hz"])
     hertzPopupButton.target = self
     hertzPopupButton.action = #selector(onHertzPopupButtonAction)
+    
+    // Set switch control size
+    sleepSwitch.controlSize = .regular
+    warmStartingSwitch.controlSize = .regular
+    timeOfImpactSwitch.controlSize = .regular
+    subSteppingSwitch.controlSize = .regular
     
     let gridView = NSGridView(views: [
       [velocityIterationsLabel, velocityIterationsStack],
@@ -336,10 +387,20 @@ class BasicSettingsViewController : NSViewController {
       [timeOfImpactLabel, timeOfImpactSwitch],
       [subSteppingLabel, subSteppingSwitch],
     ])
+    
+    // Make column 1 (with the controls) expand to fill available space
+    gridView.column(at: 1).xPlacement = .fill
+    
+    // Center the switches horizontally
+    for row in 3..<7 {
+      gridView.cell(atColumnIndex: 1, rowIndex: row).xPlacement = .center
+    }
+    
     gridView.setContentCompressionResistancePriority(NSLayoutConstraint.Priority(600),
                                                      for: .horizontal)
     gridView.setContentCompressionResistancePriority(NSLayoutConstraint.Priority(600),
                                                      for: .vertical)
+    gridView.setContentHuggingPriority(.defaultLow, for: .horizontal)
     gridView.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(gridView)
     let inset = SettingsViewController.inset
@@ -348,11 +409,12 @@ class BasicSettingsViewController : NSViewController {
       gridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: inset),
       view.bottomAnchor.constraint(greaterThanOrEqualTo: gridView.bottomAnchor, constant: inset),
       view.trailingAnchor.constraint(greaterThanOrEqualTo: gridView.trailingAnchor, constant: inset),
+      gridView.widthAnchor.constraint(greaterThanOrEqualToConstant: 350),
     ])
     
     gridView.column(at: 0).xPlacement = .trailing
     gridView.rowSpacing = 12
-    gridView.columnSpacing = 8
+    gridView.columnSpacing = 16
   }
 }
 
@@ -539,7 +601,7 @@ class DrawSettingsViewController : NSViewController {
   // MARK: zoom scale controls
   let zoomLabel = NSTextField(labelWithString: "Zoom Scale:")
   let zoomTextField = NSTextField(string: "1.0")
-  let zoomSlider = NSSlider(value: 1.0, minValue: 0.5, maxValue: 3.0, target: nil, action: nil)
+  let zoomSlider = NSSlider(value: 10.0, minValue: 0.1, maxValue: 100.0, target: nil, action: nil)
   
   @objc func onZoomSliderChanged(_ sender: NSSlider) {
     guard let settings else { return }
@@ -572,10 +634,28 @@ class DrawSettingsViewController : NSViewController {
     zoomTextField.formatter = NumberFormatter()
     zoomTextField.target = self
     zoomTextField.action = #selector(onZoomTextFieldChanged)
+    zoomTextField.widthAnchor.constraint(equalToConstant: 60).isActive = true
     
     let zoomContainer = NSStackView(views: [zoomSlider, zoomTextField])
     zoomContainer.orientation = .horizontal
     zoomContainer.spacing = 8
+    
+    // Make the slider take all available width
+    zoomSlider.translatesAutoresizingMaskIntoConstraints = false
+    zoomSlider.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    zoomContainer.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Adjust the switch controls to be centered
+    shapesSwitch.controlSize = .regular
+    jointsSwitch.controlSize = .regular
+    aabbsSwitch.controlSize = .regular
+    contactPointsSwitch.controlSize = .regular
+    contactNormalsSwitch.controlSize = .regular
+    contactImpulsesSwitch.controlSize = .regular
+    frictionImpulsesSwitch.controlSize = .regular
+    centerOfMassesSwitch.controlSize = .regular
+    statisticsSwitch.controlSize = .regular
+    profileSwitch.controlSize = .regular
     
     let gridView = NSGridView(views: [
       [shapesLabel, shapesSwitch],
@@ -590,6 +670,363 @@ class DrawSettingsViewController : NSViewController {
       [profileLabel, profileSwitch],
       [zoomLabel, zoomContainer],
     ])
+    
+    // Make column 1 (with the controls) expand to fill available space
+    gridView.column(at: 1).xPlacement = .fill
+    
+    // Center the switches horizontally
+    for row in 0..<10 {
+      gridView.cell(atColumnIndex: 1, rowIndex: row).xPlacement = .center
+    }
+    
+    // Set minimum width for the window to be more reasonable
+    gridView.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    gridView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    
+    gridView.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(gridView)
+    
+    let inset = SettingsViewController.inset
+    NSLayoutConstraint.activate([
+      gridView.topAnchor.constraint(equalTo: view.topAnchor, constant: inset),
+      gridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: inset),
+      view.bottomAnchor.constraint(greaterThanOrEqualTo: gridView.bottomAnchor, constant: inset + 50),
+      view.trailingAnchor.constraint(greaterThanOrEqualTo: gridView.trailingAnchor, constant: inset),
+      gridView.widthAnchor.constraint(greaterThanOrEqualToConstant: 350),
+    ])
+    gridView.column(at: 0).xPlacement = .trailing
+    gridView.rowSpacing = 12
+    gridView.columnSpacing = 16
+  }
+  
+}
+
+class PlinkoSettingsViewController : NSViewController {
+  weak var settings: Settings? = nil {
+    didSet {
+      guard let settings else { return }
+      pinSpacingXField.floatValue = settings.pinSpacingX
+      pinSpacingYField.floatValue = settings.pinSpacingY
+      boardRowsField.integerValue = settings.boardRows
+      topPegCountField.integerValue = settings.topPegCount
+      pegRadiusField.floatValue = settings.pegRadius
+      ballRadiusField.floatValue = settings.ballRadius
+      gravityField.floatValue = settings.physicsGravity
+    }
+  }
+  weak var delegate: SettingViewControllerDelegate? = nil
+  
+  // MARK: row 1: Pin Spacing X
+  let pinSpacingXLabel = NSTextField(labelWithString: "Pin Spacing X:")
+  let pinSpacingXField = NSTextField(string: "15.0")
+  let pinSpacingXStepper = NSStepper(frame: .zero)
+  
+  @objc func onPinSpacingXStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(pinSpacingXField)
+    pinSpacingXField.floatValue = pinSpacingXStepper.floatValue
+    settings.pinSpacingX = pinSpacingXField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onPinSpacingXFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.pinSpacingX = pinSpacingXField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 2: Pin Spacing Y
+  let pinSpacingYLabel = NSTextField(labelWithString: "Pin Spacing Y:")
+  let pinSpacingYField = NSTextField(string: "15.0")
+  let pinSpacingYStepper = NSStepper(frame: .zero)
+  
+  @objc func onPinSpacingYStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(pinSpacingYField)
+    pinSpacingYField.floatValue = pinSpacingYStepper.floatValue
+    settings.pinSpacingY = pinSpacingYField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onPinSpacingYFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.pinSpacingY = pinSpacingYField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 3: Board Rows
+  let boardRowsLabel = NSTextField(labelWithString: "Board Rows:")
+  let boardRowsField = NSTextField(string: "13")
+  let boardRowsStepper = NSStepper(frame: .zero)
+  
+  @objc func onBoardRowsStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(boardRowsField)
+    boardRowsField.integerValue = boardRowsStepper.integerValue
+    settings.boardRows = boardRowsField.integerValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onBoardRowsFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.boardRows = boardRowsField.integerValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 4: Top Peg Count
+  let topPegCountLabel = NSTextField(labelWithString: "Top Peg Count:")
+  let topPegCountField = NSTextField(string: "4")
+  let topPegCountStepper = NSStepper(frame: .zero)
+  
+  @objc func onTopPegCountStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(topPegCountField)
+    topPegCountField.integerValue = topPegCountStepper.integerValue
+    settings.topPegCount = topPegCountField.integerValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onTopPegCountFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.topPegCount = topPegCountField.integerValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 5: Peg Radius
+  let pegRadiusLabel = NSTextField(labelWithString: "Peg Radius:")
+  let pegRadiusField = NSTextField(string: "3.0")
+  let pegRadiusStepper = NSStepper(frame: .zero)
+  
+  @objc func onPegRadiusStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(pegRadiusField)
+    pegRadiusField.floatValue = pegRadiusStepper.floatValue
+    settings.pegRadius = pegRadiusField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onPegRadiusFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.pegRadius = pegRadiusField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 6: Ball Radius
+  let ballRadiusLabel = NSTextField(labelWithString: "Ball Radius:")
+  let ballRadiusField = NSTextField(string: "6.0")
+  let ballRadiusStepper = NSStepper(frame: .zero)
+  
+  @objc func onBallRadiusStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(ballRadiusField)
+    ballRadiusField.floatValue = ballRadiusStepper.floatValue
+    settings.ballRadius = ballRadiusField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onBallRadiusFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.ballRadius = ballRadiusField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  // MARK: row 7: Physics Gravity
+  let gravityLabel = NSTextField(labelWithString: "Physics Gravity:")
+  let gravityField = NSTextField(string: "-200.0")
+  let gravityStepper = NSStepper(frame: .zero)
+  
+  @objc func onGravityStepperAction(sender: NSStepper) {
+    guard let settings else { return }
+    view.window?.makeFirstResponder(gravityField)
+    gravityField.floatValue = gravityStepper.floatValue
+    settings.physicsGravity = gravityField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  @objc func onGravityFieldChanged(sender: NSTextField) {
+    guard let settings else { return }
+    settings.physicsGravity = gravityField.floatValue
+    delegate?.didSettingsChanged(settings)
+  }
+  
+  override func loadView() {
+    view = NSView(frame: .zero)
+  }
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    title = "Plinko"
+    
+    // Configure Pin Spacing X
+    pinSpacingXField.formatter = NumberFormatter()
+    pinSpacingXField.placeholderString = "15.0"
+    pinSpacingXField.target = self
+    pinSpacingXField.action = #selector(onPinSpacingXFieldChanged)
+    pinSpacingXField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    pinSpacingXStepper.minValue = 5.0
+    pinSpacingXStepper.maxValue = 50.0
+    pinSpacingXStepper.increment = 1.0
+    pinSpacingXStepper.floatValue = 15.0
+    pinSpacingXStepper.valueWraps = false
+    pinSpacingXStepper.target = self
+    pinSpacingXStepper.action = #selector(onPinSpacingXStepperAction)
+    
+    let pinSpacingXStack = NSStackView(views: [pinSpacingXField, pinSpacingXStepper])
+    pinSpacingXStack.orientation = .horizontal
+    pinSpacingXStack.spacing = 8
+    pinSpacingXStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Pin Spacing Y
+    pinSpacingYField.formatter = NumberFormatter()
+    pinSpacingYField.placeholderString = "15.0"
+    pinSpacingYField.target = self
+    pinSpacingYField.action = #selector(onPinSpacingYFieldChanged)
+    pinSpacingYField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    pinSpacingYStepper.minValue = 5.0
+    pinSpacingYStepper.maxValue = 50.0
+    pinSpacingYStepper.increment = 1.0
+    pinSpacingYStepper.floatValue = 15.0
+    pinSpacingYStepper.valueWraps = false
+    pinSpacingYStepper.target = self
+    pinSpacingYStepper.action = #selector(onPinSpacingYStepperAction)
+    
+    let pinSpacingYStack = NSStackView(views: [pinSpacingYField, pinSpacingYStepper])
+    pinSpacingYStack.orientation = .horizontal
+    pinSpacingYStack.spacing = 8
+    pinSpacingYStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Board Rows
+    boardRowsField.formatter = NumberFormatter()
+    boardRowsField.placeholderString = "13"
+    boardRowsField.target = self
+    boardRowsField.action = #selector(onBoardRowsFieldChanged)
+    boardRowsField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    boardRowsStepper.minValue = 5
+    boardRowsStepper.maxValue = 30
+    boardRowsStepper.increment = 1
+    boardRowsStepper.integerValue = 13
+    boardRowsStepper.valueWraps = false
+    boardRowsStepper.target = self
+    boardRowsStepper.action = #selector(onBoardRowsStepperAction)
+    
+    let boardRowsStack = NSStackView(views: [boardRowsField, boardRowsStepper])
+    boardRowsStack.orientation = .horizontal
+    boardRowsStack.spacing = 8
+    boardRowsStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Top Peg Count
+    topPegCountField.formatter = NumberFormatter()
+    topPegCountField.placeholderString = "4"
+    topPegCountField.target = self
+    topPegCountField.action = #selector(onTopPegCountFieldChanged)
+    topPegCountField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    topPegCountStepper.minValue = 2
+    topPegCountStepper.maxValue = 20
+    topPegCountStepper.increment = 1
+    topPegCountStepper.integerValue = 4
+    topPegCountStepper.valueWraps = false
+    topPegCountStepper.target = self
+    topPegCountStepper.action = #selector(onTopPegCountStepperAction)
+    
+    let topPegCountStack = NSStackView(views: [topPegCountField, topPegCountStepper])
+    topPegCountStack.orientation = .horizontal
+    topPegCountStack.spacing = 8
+    topPegCountStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Peg Radius
+    pegRadiusField.formatter = NumberFormatter()
+    pegRadiusField.placeholderString = "3.0"
+    pegRadiusField.target = self
+    pegRadiusField.action = #selector(onPegRadiusFieldChanged)
+    pegRadiusField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    pegRadiusStepper.minValue = 0.5
+    pegRadiusStepper.maxValue = 10.0
+    pegRadiusStepper.increment = 0.5
+    pegRadiusStepper.floatValue = 3.0
+    pegRadiusStepper.valueWraps = false
+    pegRadiusStepper.target = self
+    pegRadiusStepper.action = #selector(onPegRadiusStepperAction)
+    
+    let pegRadiusStack = NSStackView(views: [pegRadiusField, pegRadiusStepper])
+    pegRadiusStack.orientation = .horizontal
+    pegRadiusStack.spacing = 8
+    pegRadiusStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Ball Radius
+    ballRadiusField.formatter = NumberFormatter()
+    ballRadiusField.placeholderString = "6.0"
+    ballRadiusField.target = self
+    ballRadiusField.action = #selector(onBallRadiusFieldChanged)
+    ballRadiusField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    ballRadiusStepper.minValue = 1.0
+    ballRadiusStepper.maxValue = 15.0
+    ballRadiusStepper.increment = 0.5
+    ballRadiusStepper.floatValue = 6.0
+    ballRadiusStepper.valueWraps = false
+    ballRadiusStepper.target = self
+    ballRadiusStepper.action = #selector(onBallRadiusStepperAction)
+    
+    let ballRadiusStack = NSStackView(views: [ballRadiusField, ballRadiusStepper])
+    ballRadiusStack.orientation = .horizontal
+    ballRadiusStack.spacing = 8
+    ballRadiusStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Configure Gravity
+    gravityField.formatter = NumberFormatter()
+    gravityField.placeholderString = "-200.0"
+    gravityField.target = self
+    gravityField.action = #selector(onGravityFieldChanged)
+    gravityField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+    
+    gravityStepper.minValue = -500.0
+    gravityStepper.maxValue = -50.0
+    gravityStepper.increment = 10.0
+    gravityStepper.floatValue = -200.0
+    gravityStepper.valueWraps = false
+    gravityStepper.target = self
+    gravityStepper.action = #selector(onGravityStepperAction)
+    
+    let gravityStack = NSStackView(views: [gravityField, gravityStepper])
+    gravityStack.orientation = .horizontal
+    gravityStack.spacing = 8
+    gravityStack.setHuggingPriority(.defaultHigh, for: .horizontal)
+    
+    // Create Save & Apply button to add directly to the grid
+    let saveApplyButton = NSButton(title: "Save & Apply", target: nil, action: nil)
+    saveApplyButton.bezelStyle = .rounded
+    saveApplyButton.target = self.parent
+    saveApplyButton.action = #selector(SettingsViewController.saveAndApplySettings)
+    
+    let gridView = NSGridView(views: [
+      [pinSpacingXLabel, pinSpacingXStack],
+      [pinSpacingYLabel, pinSpacingYStack],
+      [boardRowsLabel, boardRowsStack],
+      [topPegCountLabel, topPegCountStack],
+      [pegRadiusLabel, pegRadiusStack],
+      [ballRadiusLabel, ballRadiusStack],
+      [gravityLabel, gravityStack],
+      [NSView(), saveApplyButton] // Add button directly to the grid
+    ])
+    
+    // Center the button in the cell
+    gridView.cell(atColumnIndex: 1, rowIndex: 7).xPlacement = .center
+    
+    // Set a height for the spacer row in Plinko tab
+    gridView.row(at: 7).height = 60
+    
+    // Make column 1 (with the controls) expand to fill available space
+    gridView.column(at: 1).xPlacement = .fill
+    
+    // Make the grid view take all available width
+    gridView.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    
     gridView.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(gridView)
     
@@ -599,10 +1036,10 @@ class DrawSettingsViewController : NSViewController {
       gridView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: inset),
       view.bottomAnchor.constraint(greaterThanOrEqualTo: gridView.bottomAnchor, constant: inset),
       view.trailingAnchor.constraint(greaterThanOrEqualTo: gridView.trailingAnchor, constant: inset),
+      gridView.widthAnchor.constraint(greaterThanOrEqualToConstant: 350),
     ])
     gridView.column(at: 0).xPlacement = .trailing
     gridView.rowSpacing = 12
-    gridView.columnSpacing = 8
+    gridView.columnSpacing = 16
   }
-  
 }

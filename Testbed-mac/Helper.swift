@@ -77,6 +77,15 @@ class Settings : CustomStringConvertible {
   
   static var sharedSettings: Settings?
   
+  // Plinko settings
+  var pinSpacingX: b2Float = 15.0
+  var pinSpacingY: b2Float = 15.0
+  var boardRows: Int = 13
+  var topPegCount: Int = 4
+  var pegRadius: b2Float = 3.0
+  var ballRadius: b2Float = 6.0
+  var physicsGravity: b2Float = -200.0
+  
   init() {
     Settings.sharedSettings = self
     assert(Settings.baseExtents.x == Settings.baseExtents.y)
@@ -101,7 +110,115 @@ class Settings : CustomStringConvertible {
     enableSleep = true
     pause = false
     singleStep = false
+    
+    // Load saved settings if available
+    loadFromUserDefaults()
   }
+  
+  // Keys for UserDefaults
+  private struct Keys {
+    static let velocityIterations = "velocityIterations"
+    static let positionIterations = "positionIterations"
+    static let hz = "hz"
+    static let drawShapes = "drawShapes"
+    static let drawJoints = "drawJoints"
+    static let drawAABBs = "drawAABBs"
+    static let drawContactPoints = "drawContactPoints"
+    static let drawContactNormals = "drawContactNormals"
+    static let drawContactImpulse = "drawContactImpulse"
+    static let drawFrictionImpulse = "drawFrictionImpulse"
+    static let drawCOMs = "drawCOMs"
+    static let drawStats = "drawStats"
+    static let drawProfile = "drawProfile"
+    static let enableWarmStarting = "enableWarmStarting"
+    static let enableContinuous = "enableContinuous"
+    static let enableSubStepping = "enableSubStepping"
+    static let enableSleep = "enableSleep"
+    static let zoomScale = "zoomScale"
+    
+    // Plinko specific keys
+    static let pinSpacingX = "pinSpacingX"
+    static let pinSpacingY = "pinSpacingY"
+    static let boardRows = "boardRows"
+    static let topPegCount = "topPegCount"
+    static let pegRadius = "pegRadius"
+    static let ballRadius = "ballRadius"
+    static let physicsGravity = "physicsGravity"
+  }
+  
+  // Save settings to UserDefaults
+  func saveToUserDefaults() {
+    let defaults = UserDefaults.standard
+    
+    // Basic settings
+    defaults.set(velocityIterations, forKey: Keys.velocityIterations)
+    defaults.set(positionIterations, forKey: Keys.positionIterations)
+    defaults.set(Double(hz), forKey: Keys.hz)
+    defaults.set(drawShapes, forKey: Keys.drawShapes)
+    defaults.set(drawJoints, forKey: Keys.drawJoints)
+    defaults.set(drawAABBs, forKey: Keys.drawAABBs)
+    defaults.set(drawContactPoints, forKey: Keys.drawContactPoints)
+    defaults.set(drawContactNormals, forKey: Keys.drawContactNormals)
+    defaults.set(drawContactImpulse, forKey: Keys.drawContactImpulse)
+    defaults.set(drawFrictionImpulse, forKey: Keys.drawFrictionImpulse)
+    defaults.set(drawCOMs, forKey: Keys.drawCOMs)
+    defaults.set(drawStats, forKey: Keys.drawStats)
+    defaults.set(drawProfile, forKey: Keys.drawProfile)
+    defaults.set(enableWarmStarting, forKey: Keys.enableWarmStarting)
+    defaults.set(enableContinuous, forKey: Keys.enableContinuous)
+    defaults.set(enableSubStepping, forKey: Keys.enableSubStepping)
+    defaults.set(enableSleep, forKey: Keys.enableSleep)
+    defaults.set(Double(zoomScale), forKey: Keys.zoomScale)
+    
+    // Plinko settings
+    defaults.set(Double(pinSpacingX), forKey: Keys.pinSpacingX)
+    defaults.set(Double(pinSpacingY), forKey: Keys.pinSpacingY)
+    defaults.set(boardRows, forKey: Keys.boardRows)
+    defaults.set(topPegCount, forKey: Keys.topPegCount)
+    defaults.set(Double(pegRadius), forKey: Keys.pegRadius)
+    defaults.set(Double(ballRadius), forKey: Keys.ballRadius)
+    defaults.set(Double(physicsGravity), forKey: Keys.physicsGravity)
+    
+    // Synchronize to make sure settings are saved
+    defaults.synchronize()
+  }
+  
+  // Load settings from UserDefaults
+  func loadFromUserDefaults() {
+    let defaults = UserDefaults.standard
+    
+    // Basic settings
+    if defaults.object(forKey: Keys.velocityIterations) != nil {
+      velocityIterations = defaults.integer(forKey: Keys.velocityIterations)
+      positionIterations = defaults.integer(forKey: Keys.positionIterations)
+      hz = b2Float(defaults.double(forKey: Keys.hz))
+      drawShapes = defaults.bool(forKey: Keys.drawShapes)
+      drawJoints = defaults.bool(forKey: Keys.drawJoints)
+      drawAABBs = defaults.bool(forKey: Keys.drawAABBs)
+      drawContactPoints = defaults.bool(forKey: Keys.drawContactPoints)
+      drawContactNormals = defaults.bool(forKey: Keys.drawContactNormals)
+      drawContactImpulse = defaults.bool(forKey: Keys.drawContactImpulse)
+      drawFrictionImpulse = defaults.bool(forKey: Keys.drawFrictionImpulse)
+      drawCOMs = defaults.bool(forKey: Keys.drawCOMs)
+      drawStats = defaults.bool(forKey: Keys.drawStats)
+      drawProfile = defaults.bool(forKey: Keys.drawProfile)
+      enableWarmStarting = defaults.bool(forKey: Keys.enableWarmStarting)
+      enableContinuous = defaults.bool(forKey: Keys.enableContinuous)
+      enableSubStepping = defaults.bool(forKey: Keys.enableSubStepping)
+      enableSleep = defaults.bool(forKey: Keys.enableSleep)
+      zoomScale = Float(defaults.double(forKey: Keys.zoomScale))
+      
+      // Plinko settings
+      pinSpacingX = b2Float(defaults.double(forKey: Keys.pinSpacingX))
+      pinSpacingY = b2Float(defaults.double(forKey: Keys.pinSpacingY))
+      boardRows = defaults.integer(forKey: Keys.boardRows)
+      topPegCount = defaults.integer(forKey: Keys.topPegCount)
+      pegRadius = b2Float(defaults.double(forKey: Keys.pegRadius))
+      ballRadius = b2Float(defaults.double(forKey: Keys.ballRadius))
+      physicsGravity = b2Float(defaults.double(forKey: Keys.physicsGravity))
+    }
+  }
+  
   var viewCenter = b2Vec2(0.0, 20.0)
   var hz: b2Float = 60.0
   var velocityIterations = 8
@@ -167,7 +284,7 @@ class Settings : CustomStringConvertible {
   }
   
   var description: String {
-    return "Settings[viewCenter=\(viewCenter),hz=\(hz),velocityIterations=\(velocityIterations),positionIterations=\(positionIterations),drawShapes=\(drawShapes),drawJoints=\(drawJoints),drawAABBs=\(drawAABBs),drawContactPoints=\(drawContactPoints),drawContactNormals=\(drawContactNormals),drawFrictionImpulse=\(drawFrictionImpulse),drawCOMs=\(drawCOMs),drawStats=\(drawStats),drawProfile=\(drawProfile),enableWarmStarting=\(enableWarmStarting),enableContinuous=\(enableContinuous),enableSubStepping=\(enableSubStepping),enableSleep=\(enableSleep),pause=\(pause),singleStep=\(singleStep),zoomScale=\(zoomScale)]"
+    return "Settings[viewCenter=\(viewCenter),hz=\(hz),velocityIterations=\(velocityIterations),positionIterations=\(positionIterations),drawShapes=\(drawShapes),drawJoints=\(drawJoints),drawAABBs=\(drawAABBs),drawContactPoints=\(drawContactPoints),drawContactNormals=\(drawContactNormals),drawFrictionImpulse=\(drawFrictionImpulse),drawCOMs=\(drawCOMs),drawStats=\(drawStats),drawProfile=\(drawProfile),enableWarmStarting=\(enableWarmStarting),enableContinuous=\(enableContinuous),enableSubStepping=\(enableSubStepping),enableSleep=\(enableSleep),pause=\(pause),singleStep=\(singleStep),zoomScale=\(zoomScale),pinSpacingX=\(pinSpacingX),pinSpacingY=\(pinSpacingY),boardRows=\(boardRows),topPegCount=\(topPegCount),pegRadius=\(pegRadius),ballRadius=\(ballRadius),physicsGravity=\(physicsGravity)]"
   }
 }
 
