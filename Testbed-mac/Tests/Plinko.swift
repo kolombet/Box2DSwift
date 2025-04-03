@@ -27,13 +27,8 @@ the original C++ code written by Erin Catto.
 import AppKit
 import Foundation
 
-struct BallPosition: Codable {
-    let x: Float
-    let y: Float
-}
-
 struct BallPath: Codable {
-    let positions: [BallPosition]
+    let positions: [Int64]
     let ballName: String
 }
 
@@ -55,6 +50,9 @@ class Plinko: TestCase, b2ContactListener {
     private var BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
     private var BALLS_PER_LAUNCH_BATCH = 5
     
+    // Recording configuration
+    private var RECORD_EVERY_N_FRAMES = 3  // Record position every N frames (1 = every frame, 2 = every other frame, etc.)
+    
     var dropButton: NSButton?
     var launchManyButton: NSButton?
     var cancelButton: NSButton?
@@ -67,7 +65,20 @@ class Plinko: TestCase, b2ContactListener {
     // Ball tracking
     var ballCounter = 0
     var activeBalls = [String: b2Body]()
-    var ballPositions = [String: [BallPosition]]()
+    var ballPositions = [String: [Int64]]()
+    
+    // Helper functions for packing/unpacking coordinates
+    func packCoordinates(x: Int, y: Int) -> Int64 {
+        return (Int64(x) << 32) | Int64(y & 0xFFFFFFFF)
+    }
+    
+    func unpackX(from packed: Int64) -> Int {
+        return Int((packed >> 32) & 0xFFFFFFFF)
+    }
+    
+    func unpackY(from packed: Int64) -> Int {
+        return Int(packed & 0xFFFFFFFF)
+    }
     
     // Rendering control
     var renderingDisabled = false
@@ -235,8 +246,8 @@ class Plinko: TestCase, b2ContactListener {
             launchManyButton?.isEnabled = false
             
             // Record initial position
-            let position = BallPosition(x: ball.position.x, y: ball.position.y)
-            ballPositions[ballName]?.append(position)
+            let packedPosition = packCoordinates(x: Int(ball.position.x), y: Int(ball.position.y))
+            ballPositions[ballName] = [packedPosition]
         }
     }
     
@@ -374,7 +385,7 @@ class Plinko: TestCase, b2ContactListener {
         // Not needed for our implementation
     }
     
-    func saveBallPath(_ ballName: String, positions: [BallPosition]) {
+    func saveBallPath(_ ballName: String, positions: [Int64]) {
         let ballPath = BallPath(positions: positions, ballName: ballName)
         
         // Create encoder
@@ -395,6 +406,15 @@ class Plinko: TestCase, b2ContactListener {
             // Write to file
             try jsonData.write(to: fileURL)
             print("Saved ball path to \(fileURL.path)")
+            
+            // Save compressed binary version
+            if let compressedData = try? (jsonData as NSData).compressed(using: .zlib) as Data {
+                // Convert to Base64 string
+                let base64String = compressedData.base64EncodedString()
+                let base64FileURL = documentsDirectory.appendingPathComponent("\(ballName)_\(timestamp).txt")
+                try base64String.write(to: base64FileURL, atomically: true, encoding: .utf8)
+                print("Saved base64 encoded ball path to \(base64FileURL.path)")
+            }
         } catch {
             print("Error saving ball path: \(error)")
         }
@@ -410,10 +430,12 @@ class Plinko: TestCase, b2ContactListener {
             return
         }
         
-        // Record positions for all active balls
-        for (ballName, ball) in activeBalls {
-            let position = BallPosition(x: ball.position.x, y: ball.position.y)
-            ballPositions[ballName, default: []].append(position)
+        // Record positions for all active balls (only every N frames)
+        if stepCount % RECORD_EVERY_N_FRAMES == 0 {
+            for (ballName, ball) in activeBalls {
+                let packedPosition = packCoordinates(x: Int(ball.position.x), y: Int(ball.position.y))
+                ballPositions[ballName, default: []].append(packedPosition)
+            }
         }
         
         // Update button state based on whether there are active balls
