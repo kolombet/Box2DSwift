@@ -32,6 +32,24 @@ struct BallPath: Codable {
     let ballName: String
 }
 
+struct PinData: Codable {
+    let x: Float
+    let y: Float
+    let radius: Float
+    let type: String // "peg", "boundary_wall", "basket_wall", or "trigger"
+}
+
+struct PinConfiguration: Codable {
+    let pins: [PinData]
+    let boardRows: Int
+    let topPegCount: Int
+    let pegRadius: Float
+    let pinSpacingX: Float
+    let pinSpacingY: Float
+    let baseY: Float
+    let timestamp: Int
+}
+
 class Plinko: TestCase, b2ContactListener {
     override class var title: String { "Plinko" }
     
@@ -49,6 +67,11 @@ class Plinko: TestCase, b2ContactListener {
     private var BALL_SPAWN_IMPULSE_MAX: Float = 0.2
     private var BALL_LAUNCH_INTERVAL: TimeInterval = 0.02
     private var BALLS_PER_LAUNCH_BATCH = 5
+    
+    // New basket configuration
+    private var BASKET_HEIGHT: b2Float = 20.0
+    private var BASKET_WALL_THICKNESS: b2Float = 1.0
+    private var BASKET_BOTTOM_HEIGHT: b2Float = 3.0
     
     // Recording configuration
     private var RECORD_EVERY_N_FRAMES = 3  // Record position every N frames (1 = every frame, 2 = every other frame, etc.)
@@ -88,6 +111,7 @@ class Plinko: TestCase, b2ContactListener {
     let CATEGORY_BOUNDARY: UInt16 = 0x0001
     let CATEGORY_PEG: UInt16 = 0x0002
     let CATEGORY_BALL: UInt16 = 0x0004
+    let CATEGORY_BASKET: UInt16 = 0x0008
     
     override func prepare() {
         // Update local variables from settings
@@ -103,6 +127,9 @@ class Plinko: TestCase, b2ContactListener {
         
         world.setContactListener(self)
         
+        // Array to collect pin positions
+        var pinPositions: [PinData] = []
+        
         let effectivePinSpacingX = PIN_SPACING_X + 2 * PEG_RADIUS
         let effectivePinSpacingY = PIN_SPACING_Y + 2 * PEG_RADIUS
         
@@ -116,6 +143,9 @@ class Plinko: TestCase, b2ContactListener {
         let topY = BASE_Y
         let bottomY: b2Float = BASE_Y - effectivePinSpacingY * b2Float(BOARD_ROWS - 1)
         
+        // Calculate basket row position - one spacing below the last peg row
+        let basketRowY = bottomY - effectivePinSpacingY
+        
         // Create boundary
         do {
             let bd = b2BodyDef()
@@ -124,8 +154,8 @@ class Plinko: TestCase, b2ContactListener {
             // Create walls
             let shape = b2EdgeShape()
             
-            // Left angled wall - connects top left peg to bottom left peg
-            shape.set(vertex1: b2Vec2(bottomLeftX, bottomY), vertex2: b2Vec2(topLeftX, topY))
+            // Left angled wall - connects top left peg to bottom left peg, then continues to basket level
+            shape.set(vertex1: b2Vec2(bottomLeftX - effectivePinSpacingX/2, basketRowY), vertex2: b2Vec2(topLeftX, topY))
             let fixDef = b2FixtureDef()
             fixDef.shape = shape
             fixDef.density = 0.0
@@ -134,9 +164,17 @@ class Plinko: TestCase, b2ContactListener {
             fixDef.filter.categoryBits = CATEGORY_BOUNDARY
             ground.createFixture(fixDef)
             
-            // Right angled wall - connects top right peg to bottom right peg
-            shape.set(vertex1: b2Vec2(topRightX, topY), vertex2: b2Vec2(bottomRightX, bottomY))
+            // Collect left wall data
+            let leftWallData = PinData(x: Float((bottomLeftX - effectivePinSpacingX/2 + topLeftX) / 2.0), y: Float((basketRowY + topY) / 2.0), radius: 0.0, type: "boundary_wall")
+            pinPositions.append(leftWallData)
+            
+            // Right angled wall - connects top right peg to bottom right peg, then continues to basket level
+            shape.set(vertex1: b2Vec2(topRightX, topY), vertex2: b2Vec2(bottomRightX + effectivePinSpacingX/2, basketRowY))
             ground.createFixture(fixDef)
+            
+            // Collect right wall data
+            let rightWallData = PinData(x: Float((topRightX + bottomRightX + effectivePinSpacingX/2) / 2.0), y: Float((topY + basketRowY) / 2.0), radius: 0.0, type: "boundary_wall")
+            pinPositions.append(rightWallData)
         }
         
         // Create pegs (circular obstacles)
@@ -166,14 +204,19 @@ class Plinko: TestCase, b2ContactListener {
                     fd.filter.categoryBits = CATEGORY_PEG
                     body.createFixture(fd)
                     
+                    // Collect pin position data
+                    let pinData = PinData(x: Float(x), y: Float(y), radius: Float(PEG_RADIUS), type: "peg")
+                    pinPositions.append(pinData)
+                    
+                    // Add small separator walls below the last row of pegs
                     if row == BOARD_ROWS - 1 {
                         let wallBd = b2BodyDef()
                         wallBd.type = b2BodyType.staticBody
-                        wallBd.position = b2Vec2(x, y - 1.0)
+                        wallBd.position = b2Vec2(x, y - effectivePinSpacingY/2)
                         let wallBody = self.world.createBody(wallBd)
                         
                         let wallShape = b2EdgeShape()
-                        wallShape.set(vertex1: b2Vec2(0.0, 0.0), vertex2: b2Vec2(0.0, -2.0))
+                        wallShape.set(vertex1: b2Vec2(0.0, 0.0), vertex2: b2Vec2(0.0, -effectivePinSpacingY/2))
                         
                         let wallFd = b2FixtureDef()
                         wallFd.shape = wallShape
@@ -182,28 +225,106 @@ class Plinko: TestCase, b2ContactListener {
                         wallFd.restitution = 0.3
                         wallFd.filter.categoryBits = CATEGORY_BOUNDARY
                         wallBody.createFixture(wallFd)
-                        
-                        if i < pegCount - 1 {
-                            let triggerBd = b2BodyDef()
-                            triggerBd.type = b2BodyType.staticBody
-                            triggerBd.position = b2Vec2(x + effectivePinSpacingX / 2.0, y - 2.0)
-                            let triggerBody = self.world.createBody(triggerBd)
-                            
-                            let triggerShape = b2PolygonShape()
-                            triggerShape.setAsBox(halfWidth: effectivePinSpacingX / 2.0, halfHeight: 0.5)
-                            
-                            let triggerFd = b2FixtureDef()
-                            triggerFd.shape = triggerShape
-                            triggerFd.density = 0.0
-                            triggerFd.isSensor = true
-                            triggerFd.userData = "trigger" as NSString
-                            triggerFd.filter.categoryBits = CATEGORY_BOUNDARY
-                            triggerBody.createFixture(triggerFd)
-                        }
                     }
                 }
             }
         }
+        
+        // Create baskets below the last row
+        do {
+            let basketCount = bottomRowPegCount + 1 // One more basket than the bottom peg row
+            let basketRowWidth = effectivePinSpacingX * b2Float(basketCount - 1)
+            let basketStartX = -basketRowWidth / 2.0
+            
+            for i in 0 ..< basketCount {
+                let basketCenterX = basketStartX + effectivePinSpacingX * b2Float(i)
+                
+                // Create basket walls (left and right sides)
+                let basketBd = b2BodyDef()
+                basketBd.type = b2BodyType.staticBody
+                let basketBody = self.world.createBody(basketBd)
+                
+                // Left wall of basket
+                let leftWallShape = b2PolygonShape()
+                let leftWallX = basketCenterX - effectivePinSpacingX/2 + BASKET_WALL_THICKNESS/2
+                leftWallShape.setAsBox(halfWidth: BASKET_WALL_THICKNESS/2, halfHeight: BASKET_HEIGHT/2)
+                
+                let leftWallFd = b2FixtureDef()
+                leftWallFd.shape = leftWallShape
+                leftWallFd.density = 0.0
+                leftWallFd.friction = 0.1
+                leftWallFd.restitution = 0.3
+                leftWallFd.filter.categoryBits = CATEGORY_BASKET
+                
+                basketBd.position = b2Vec2(leftWallX, basketRowY - BASKET_HEIGHT/2)
+                let leftWallBody = self.world.createBody(basketBd)
+                leftWallBody.createFixture(leftWallFd)
+                
+                // Right wall of basket
+                let rightWallShape = b2PolygonShape()
+                let rightWallX = basketCenterX + effectivePinSpacingX/2 - BASKET_WALL_THICKNESS/2
+                rightWallShape.setAsBox(halfWidth: BASKET_WALL_THICKNESS/2, halfHeight: BASKET_HEIGHT/2)
+                
+                let rightWallFd = b2FixtureDef()
+                rightWallFd.shape = rightWallShape
+                rightWallFd.density = 0.0
+                rightWallFd.friction = 0.1
+                rightWallFd.restitution = 0.3
+                rightWallFd.filter.categoryBits = CATEGORY_BASKET
+                
+                basketBd.position = b2Vec2(rightWallX, basketRowY - BASKET_HEIGHT/2)
+                let rightWallBody = self.world.createBody(basketBd)
+                rightWallBody.createFixture(rightWallFd)
+                
+                // Bottom of basket - make it a sensor so balls can pass through to trigger
+                let bottomShape = b2PolygonShape()
+                let bottomWidth = effectivePinSpacingX - BASKET_WALL_THICKNESS
+                bottomShape.setAsBox(halfWidth: bottomWidth/2, halfHeight: BASKET_BOTTOM_HEIGHT/2)
+                
+                let bottomFd = b2FixtureDef()
+                bottomFd.shape = bottomShape
+                bottomFd.density = 0.0
+                bottomFd.friction = 0.1
+                bottomFd.restitution = 0.1
+                bottomFd.isSensor = true  // Make it a sensor so balls pass through
+                bottomFd.filter.categoryBits = CATEGORY_BASKET
+                
+                basketBd.position = b2Vec2(basketCenterX, basketRowY - BASKET_HEIGHT + BASKET_BOTTOM_HEIGHT/2)
+                let bottomBody = self.world.createBody(basketBd)
+                bottomBody.createFixture(bottomFd)
+                
+                // Collect basket wall data
+                let leftWallData = PinData(x: Float(leftWallX), y: Float(basketRowY - BASKET_HEIGHT/2), radius: 0.0, type: "basket_wall")
+                pinPositions.append(leftWallData)
+                
+                let rightWallData = PinData(x: Float(rightWallX), y: Float(basketRowY - BASKET_HEIGHT/2), radius: 0.0, type: "basket_wall")
+                pinPositions.append(rightWallData)
+                
+                // Create trigger zone at the bottom of each basket - positioned just below the basket bottom
+                let triggerBd = b2BodyDef()
+                triggerBd.type = b2BodyType.staticBody
+                triggerBd.position = b2Vec2(basketCenterX, basketRowY - BASKET_HEIGHT - BASKET_BOTTOM_HEIGHT/2 - 1.0)
+                let triggerBody = self.world.createBody(triggerBd)
+                
+                let triggerShape = b2PolygonShape()
+                triggerShape.setAsBox(halfWidth: bottomWidth/2, halfHeight: 1.0)
+                
+                let triggerFd = b2FixtureDef()
+                triggerFd.shape = triggerShape
+                triggerFd.density = 0.0
+                triggerFd.isSensor = true
+                triggerFd.userData = "basket_trigger_\(i)" as NSString
+                triggerFd.filter.categoryBits = CATEGORY_BOUNDARY
+                triggerBody.createFixture(triggerFd)
+                
+                // Collect trigger data
+                let triggerData = PinData(x: Float(basketCenterX), y: Float(basketRowY - BASKET_HEIGHT - BASKET_BOTTOM_HEIGHT/2 - 1.0), radius: 0.0, type: "trigger")
+                pinPositions.append(triggerData)
+            }
+        }
+        
+        // Save pin positions as JSON
+        savePinPositions(pinPositions)
     }
     
     func dropBall() {
@@ -227,7 +348,7 @@ class Plinko: TestCase, b2ContactListener {
             fd.restitution = 0.1
             
             fd.filter.categoryBits = CATEGORY_BALL
-            fd.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PEG
+            fd.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PEG | CATEGORY_BASKET
             
             ball.createFixture(fd)
             
@@ -364,6 +485,31 @@ class Plinko: TestCase, b2ContactListener {
         let fixtureA = contact.fixtureA
         let fixtureB = contact.fixtureB
         
+        // Check for basket trigger contact
+        let userDataA = fixtureA.userData as? String
+        let userDataB = fixtureB.userData as? String
+        
+        if let userData = userDataA, userData.hasPrefix("basket_trigger_") {
+            if fixtureB.body.type == b2BodyType.dynamicBody {
+                // Queue the ball for destruction
+                bodiesToDestroy.append(fixtureB.body)
+                
+                // Extract basket number for scoring/logging
+                let basketNumber = String(userData.dropFirst("basket_trigger_".count))
+                print("Ball entered basket \(basketNumber)")
+            }
+        } else if let userData = userDataB, userData.hasPrefix("basket_trigger_") {
+            if fixtureA.body.type == b2BodyType.dynamicBody {
+                // Queue the ball for destruction
+                bodiesToDestroy.append(fixtureA.body)
+                
+                // Extract basket number for scoring/logging
+                let basketNumber = String(userData.dropFirst("basket_trigger_".count))
+                print("Ball entered basket \(basketNumber)")
+            }
+        }
+        
+        // Keep the old trigger logic for backward compatibility
         if fixtureA.userData as? String == "trigger" || fixtureB.userData as? String == "trigger" {
             let ballFixture = fixtureA.userData as? String == "trigger" ? fixtureB : fixtureA
             if ballFixture.body.type == b2BodyType.dynamicBody {
@@ -383,6 +529,45 @@ class Plinko: TestCase, b2ContactListener {
     
     func postSolve(_ contact: b2Contact, impulse: b2ContactImpulse) {
         // Not needed for our implementation
+    }
+    
+    func savePinPositions(_ pins: [PinData]) {
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let pinConfiguration = PinConfiguration(
+            pins: pins,
+            boardRows: BOARD_ROWS,
+            topPegCount: TOP_PEG_COUNT,
+            pegRadius: Float(PEG_RADIUS),
+            pinSpacingX: Float(PIN_SPACING_X),
+            pinSpacingY: Float(PIN_SPACING_Y),
+            baseY: Float(BASE_Y),
+            timestamp: timestamp
+        )
+        
+        // Create encoder
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        do {
+            let jsonData = try encoder.encode(pinConfiguration)
+            let jsonString = String(data: jsonData, encoding: .utf8) ?? "Failed to create JSON string"
+            
+            // Print JSON to console
+            print("Pin Configuration JSON:")
+            print(jsonString)
+            
+            // Use the user's Documents directory
+            let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            let documentsDirectory = paths[0]
+            let fileURL = documentsDirectory.appendingPathComponent("pin_configuration_\(timestamp).json")
+            
+            // Write to file
+            try jsonData.write(to: fileURL)
+            print("Saved pin configuration to \(fileURL.path)")
+            
+        } catch {
+            print("Error saving pin configuration: \(error)")
+        }
     }
     
     func saveBallPath(_ ballName: String, positions: [Int64]) {
